@@ -1,0 +1,81 @@
+@extends('layouts.app')
+
+@section('title', 'Inscription - SmartQueue AI')
+
+@section('content')
+<div class="min-h-[80vh] flex items-center justify-center">
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-2xl card-shadow p-8 animate-slide-up">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 rounded-xl gradient-primary flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-text mb-2">Créer un compte</h1>
+                <p class="text-gray-500">Rejoignez SmartQueue AI dès maintenant</p>
+            </div>
+
+            <form method="POST" action="{{ route('register') }}" class="space-y-4">
+                @csrf
+
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nom complet</label>
+                    <input type="text" id="name" name="name" value="{{ old('name') }}" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                        placeholder="John Doe">
+                    @error('name')
+                        <p class="mt-2 text-sm text-error">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                        placeholder="votre@email.com">
+                    @error('email')
+                        <p class="mt-2 text-sm text-error">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                    <input type="password" id="password" name="password" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                        placeholder="••••••••">
+                    @error('password')
+                        <p class="mt-2 text-sm text-error">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Confirmer le mot de passe</label>
+                    <input type="password" id="password_confirmation" name="password_confirmation" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                        placeholder="••••••••">
+                </div>
+
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Type de compte</label>
+                    <select id="role" name="role" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition">
+                        <option value="client">Client</option>
+                        <option value="agent">Agent</option>
+                        <option value="admin">Administrateur</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full py-3 px-4 rounded-xl gradient-primary text-white font-medium hover:opacity-90 transition transform hover:scale-[1.02]">
+                    S'inscrire
+                </button>
+            </form>
+
+            <p class="mt-6 text-center text-sm text-gray-500">
+                Déjà un compte ?
+                <a href="{{ route('login') }}" class="text-primary font-medium hover:underline">Se connecter</a>
+            </p>
+        </div>
+    </div>
+</div>
+@endsection
