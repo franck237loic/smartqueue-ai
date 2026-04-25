@@ -12,8 +12,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                     </svg>
                 </div>
-                <h1 class="text-2xl font-bold text-text mb-2">Créer un compte</h1>
-                <p class="text-gray-500">Rejoignez SmartQueue AI dès maintenant</p>
+                <h1 class="text-2xl font-bold text-text mb-2">Créer un compte administrateur</h1>
+                <p class="text-gray-500">Réservé au Super Administrateur</p>
             </div>
 
             <form method="POST" action="{{ route('register') }}" class="space-y-4">
@@ -57,15 +57,16 @@
                 </div>
 
                 <div>
-                    <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Type de compte</label>
-                    <select id="role" name="role" required
-                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition">
-                        <option value="client">Client</option>
-                        <option value="agent">Agent</option>
-                        <option value="admin">Administrateur</option>
-                    </select>
+                    <label for="company_name" class="block text-sm font-medium text-gray-700 mb-2">Nom de l'entreprise</label>
+                    <input type="text" id="company_name" name="company_name" value="{{ old('company_name') }}" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                        placeholder="Nom de l'entreprise">
+                    @error('company_name')
+                        <p class="mt-2 text-sm text-error">{{ $message }}</p>
+                    @enderror
                 </div>
 
+                
                 <button type="submit" class="w-full py-3 px-4 rounded-xl gradient-primary text-white font-medium hover:opacity-90 transition transform hover:scale-[1.02]">
                     S'inscrire
                 </button>

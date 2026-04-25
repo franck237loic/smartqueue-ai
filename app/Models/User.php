@@ -26,6 +26,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
         'global_role',
         'current_company_id',
     ];
@@ -86,9 +87,24 @@ class User extends Authenticatable
 
     public function assignedCounters()
     {
-        // Récupérer les guichets assignés via la table company_user
+        // Récupérer les guichets assignés via la table company_user - CORRIGÉ
         return $this->belongsToMany(Counter::class, 'company_user', 'user_id', 'counter_id')
-            ->wherePivotNotNull('counter_id');
+            ->wherePivot('counter_id', '!=', null)
+            ->wherePivot('company_id', function($query) {
+                $query->select('company_id')
+                      ->from('company_user')
+                      ->where('user_id', $this->id)
+                      ->whereNotNull('counter_id')
+                      ->limit(1);
+            });
+    }
+
+    public function getAssignedCounter($companyId)
+    {
+        $pivot = $this->companies()->where('company_user.company_id', $companyId)->first()?->pivot;
+        return $pivot?->counter_id
+            ? \App\Models\Counter::find($pivot->counter_id)
+            : null;
     }
 
     public function tickets(): HasMany
@@ -112,14 +128,14 @@ class User extends Authenticatable
 
     
     /**
-     * Vérifier si l'utilisateur est un agent dans l'entreprise (gère les deux cas)
+     * Vérifier si l'utilisateur est un agent dans l'entreprise (rôle 'agent' uniquement)
      */
     public function isAgentInCompany($company): bool
     {
         // Si c'est un objet Company, utiliser la méthode existante
         if ($company instanceof \App\Models\Company) {
             $role = $this->companyRole($company);
-            return in_array($role, ['company_admin', 'agent']);
+            return $role === 'agent'; // Uniquement le rôle 'agent'
         }
         
         // Si c'est un ID (string/integer), charger l'entreprise
@@ -127,7 +143,7 @@ class User extends Authenticatable
             $companyModel = \App\Models\Company::find($company);
             if ($companyModel) {
                 $role = $this->companyRole($companyModel);
-                return in_array($role, ['company_admin', 'agent']);
+                return $role === 'agent'; // Uniquement le rôle 'agent'
             }
         }
         

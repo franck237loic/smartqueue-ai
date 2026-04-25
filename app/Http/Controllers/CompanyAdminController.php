@@ -181,9 +181,9 @@ class CompanyAdminController extends Controller
     {
         $agents = $company->users()
             ->wherePivotIn('role', ['company_admin', 'agent'])
-            ->withPivot(['role', 'counter_id'])
-            ->paginate(10);
-
+            ->withPivot(['counter_id', 'role'])
+            ->get();
+        
         return view('company.admin.agents', compact('company', 'agents'));
     }
 
@@ -200,14 +200,24 @@ class CompanyAdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
+            'phone' => 'nullable|string|max:20',
             'role' => 'required|in:company_admin,agent',
-            'counter_id' => 'nullable|exists:counters,id',
+            'counter_id' => [
+                'nullable',
+                'exists:counters,id',
+                function ($attribute, $value, $fail) use ($company) {
+                    if ($value && \App\Models\Counter::find($value)?->company_id !== $company->id) {
+                        $fail('Le guichet sélectionné n\'appartient pas à cette entreprise.');
+                    }
+                },
+            ],
         ]);
 
         // Créer l'utilisateur
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
+            'phone' => $data['phone'] ?? null,
             'password' => Hash::make($data['password']),
             'global_role' => 'user',
         ]);
@@ -244,14 +254,24 @@ class CompanyAdminController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $agent->id,
+            'phone' => 'nullable|string|max:20',
             'role' => 'required|in:company_admin,agent',
-            'counter_id' => 'nullable|exists:counters,id',
+            'counter_id' => [
+                'nullable',
+                'exists:counters,id',
+                function ($attribute, $value, $fail) use ($company) {
+                    if ($value && \App\Models\Counter::find($value)?->company_id !== $company->id) {
+                        $fail('Le guichet sélectionné n\'appartient pas à cette entreprise.');
+                    }
+                },
+            ],
         ]);
 
         // Mettre à jour l'utilisateur
         $agent->update([
             'name' => $data['name'],
             'email' => $data['email'],
+            'phone' => $data['phone'] ?? null,
         ]);
 
         // Mettre à jour le mot de passe si fourni
@@ -300,11 +320,9 @@ class CompanyAdminController extends Controller
                 return response()->json(['error' => 'Agent non trouvé dans cette entreprise'], 404);
             }
 
-            // Récupérer le guichet assigné si existant
-            $assignedCounter = null;
-            if ($pivot->pivot->counter_id) {
-                $assignedCounter = \App\Models\Counter::find($pivot->pivot->counter_id);
-            }
+            // Récupérer tous les guichets assignés à l'agent dans cette entreprise
+            $assignedCounter = $agent->getAssignedCounter($company->id);
+            $assignedCounters = $assignedCounter ? [$assignedCounter] : [];
 
             return response()->json([
                 'id' => $agent->id,
@@ -314,7 +332,12 @@ class CompanyAdminController extends Controller
                 'created_at' => $agent->created_at,
                 'deleted_at' => $agent->deleted_at,
                 'pivot_role' => $pivot->pivot->role,
-                'assigned_counters' => $assignedCounter ? [$assignedCounter] : [],
+                'company' => [
+                    'id' => $company->id,
+                    'name' => $company->name,
+                ],
+                'assigned_counters' => $assignedCounters,
+                'status' => $agent->deleted_at ? 'Supprimé' : 'Actif',
             ]);
         } catch (\Exception $e) {
             \Log::error('Error in agentDetails: ' . $e->getMessage());

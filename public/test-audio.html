@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Audio SmartQueue</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        button { margin: 10px; padding: 15px 25px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; transition: all 0.3s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .btn-danger { background: #dc3545; color: white; }
+        .status { margin: 20px 0; padding: 15px; background: #e9ecef; border-radius: 5px; font-weight: bold; }
+        .audio-info { margin: 10px 0; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔊 Test des Fichiers Audio SmartQueue</h1>
+        
+        <div class="status" id="status">Cliquez sur les boutons pour tester chaque son</div>
+
+        <h2>📞 Sons d'Appel et Notifications</h2>
+        <button class="btn-primary" onclick="testSound('ticket-called.mp3')">
+            🎯 Ticket Called (Appel standard)
+        </button>
+        <button class="btn-success" onclick="testSound('client-notification.mp3')">
+            🔔 Client Notification (Avancement file)
+        </button>
+        <button class="btn-warning" onclick="testSound('preparation-alert.mp3')">
+            ⚠️ Preparation Alert (Rappel urgent)
+        </button>
+        <button class="btn-primary" onclick="testSound('agent-notification.mp3')">
+            👨‍💼 Agent Notification (Confirmation présence)
+        </button>
+        <button class="btn-danger" onclick="testSound('ticket-absent.mp3')">
+            ❌ Ticket Absent (Absence client)
+        </button>
+
+        <h2>🧪 Test Complet du Flux</h2>
+        <button class="btn-success" onclick="testFullFlow()">
+            ▶️ Lancer le test complet du flux
+        </button>
+
+        <div id="audioInfo"></div>
+
+        <h2>📋 État des Fichiers</h2>
+        <div id="fileStatus">Vérification des fichiers...</div>
+    </div>
+
+    <script>
+        let currentAudio = null;
+
+        function updateStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + (isError ? 'error' : 'success');
+        }
+
+        function updateAudioInfo(soundName, duration) {
+            const info = document.getElementById('audioInfo');
+            info.innerHTML += `
+                <div class="audio-info">
+                    <strong>📵 ${soundName}</strong><br>
+                    Durée: ${duration.toFixed(2)} secondes<br>
+                    Statut: ✅ Joué avec succès
+                </div>
+            `;
+        }
+
+        function testSound(filename) {
+            updateStatus(`Test du son: ${filename}`);
+            
+            // Arrêter le son précédent s'il y en a un
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+
+            const audio = new Audio(`/sounds/${filename}`);
+            
+            audio.addEventListener('loadeddata', () => {
+                updateStatus(`Lecture de: ${filename}`);
+                updateAudioInfo(filename, audio.duration);
+            });
+
+            audio.addEventListener('error', (e) => {
+                updateStatus(`❌ Erreur de chargement pour ${filename}: ${e.message}`, true);
+            });
+
+            audio.addEventListener('ended', () => {
+                updateStatus(`✅ ${filename} terminé`);
+            });
+
+            audio.play().catch(error => {
+                updateStatus(`❌ Erreur de lecture: ${error.message}`, true);
+            });
+
+            currentAudio = audio;
+        }
+
+        async function testFullFlow() {
+            updateStatus('🔄 Test complet du flux en cours...');
+            
+            const sounds = [
+                { file: 'ticket-called.mp3', delay: 0, description: 'Appel du ticket' },
+                { file: 'client-notification.mp3', delay: 2000, description: 'Notification d\'avancement' },
+                { file: 'preparation-alert.mp3', delay: 4000, description: 'Rappel urgent' },
+                { file: 'agent-notification.mp3', delay: 6000, description: 'Confirmation agent' },
+                { file: 'ticket-absent.mp3', delay: 8000, description: 'Ticket absent' }
+            ];
+
+            for (const sound of sounds) {
+                await new Promise(resolve => setTimeout(resolve, sound.delay));
+                updateStatus(`📵 ${sound.description}`);
+                testSound(sound.file);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            updateStatus('✅ Test complet terminé !');
+        }
+
+        function checkFiles() {
+            const files = [
+                'ticket-called.mp3',
+                'client-notification.mp3', 
+                'preparation-alert.mp3',
+                'agent-notification.mp3',
+                'ticket-absent.mp3'
+            ];
+
+            let statusHTML = '<h3>📁 Vérification des fichiers audio:</h3>';
+            
+            files.forEach(filename => {
+                fetch(`/sounds/${filename}`, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            statusHTML += `<div class="audio-info">✅ ${filename} - Présent (${response.headers.get('content-length')} bytes)</div>`;
+                        } else {
+                            statusHTML += `<div class="audio-info error">❌ ${filename} - Manquant</div>`;
+                        }
+                    })
+                    .catch(() => {
+                        statusHTML += `<div class="audio-info error">❌ ${filename} - Erreur de vérification</div>`;
+                    });
+            });
+
+            document.getElementById('fileStatus').innerHTML = statusHTML;
+        }
+
+        // Vérifier les fichiers au chargement
+        checkFiles();
+
+        // Instructions pour l'utilisateur
+        console.log('%c🎵 SmartQueue Audio Test', 'font-size: 20px; font-weight: bold; color: #007bff;');
+        console.log('%cTestez chaque son individuellement ou lancez le flux complet', 'font-size: 14px; color: #666;');
+        console.log('%cSi un son ne fonctionne pas, vérifiez:', 'font-size: 14px; color: #dc3545;');
+        console.log('1. Le nom du fichier exact');
+        console.log('2. Le chemin /sounds/');
+        console.log('3. Les permissions du navigateur pour l\'audio');
+    </script>
+</body>
+</html>

@@ -586,10 +586,6 @@ unset($__errorArgs, $__bag); ?>
             <!-- Footer -->
             <div class="login-footer">
                 <p>
-                    Pas encore de compte ? 
-                    <a href="<?php echo e(route('register')); ?>" class="link">Créer un compte</a>
-                </p>
-                <p style="margin-top: 0.5rem;">
                     <a href="<?php echo e(route('welcome')); ?>" class="link">Retour à l'accueil</a>
                 </p>
             </div>

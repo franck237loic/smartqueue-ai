@@ -61,9 +61,18 @@
                                     Actif
                                 </span>
                                 @if($agent->pivot->counter_id)
+                                @php
+                                    $counter = \App\Models\Counter::find($agent->pivot->counter_id);
+                                @endphp
+                                @if($counter)
                                 <span class="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400">
-                                    1 guichet assigné
+                                    {{ $counter->name }}
                                 </span>
+                                @else
+                                <span class="text-xs px-2 py-1 rounded-full bg-gray-500/20 text-gray-400">
+                                    Guichet supprimé
+                                </span>
+                                @endif
                                 @endif
                             </div>
                         </div>
@@ -167,6 +176,7 @@
                 </button>
                 <form id="deleteForm" method="POST" class="inline">
                     @csrf
+                    @method('DELETE')
                     <button type="submit" 
                             class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
                         Supprimer
@@ -226,7 +236,13 @@ function closeDeleteModal() {
 
 // Agent details
 function showAgentDetails(agentId) {
-    fetch(`/company/{{ $company->id }}/admin/agents/${agentId}/details`)
+    fetch(`/company/{{ $company->id }}/admin/agents/${agentId}/details`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -245,19 +261,27 @@ function showAgentDetails(agentId) {
                         <div class="space-y-3">
                             <div>
                                 <p class="text-sm text-dark-600">Nom complet</p>
-                                <p class="text-white">${data.name}</p>
+                                <p class="text-white font-medium">${data.name}</p>
                             </div>
                             <div>
                                 <p class="text-sm text-dark-600">Email</p>
-                                <p class="text-white">${data.email}</p>
+                                <p class="text-white font-medium">${data.email}</p>
                             </div>
                             <div>
                                 <p class="text-sm text-dark-600">Téléphone</p>
-                                <p class="text-white">${data.phone || 'Non spécifié'}</p>
+                                <p class="text-white font-medium">${data.phone}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-dark-600">Rôle</p>
+                                <p class="text-white font-medium">${data.pivot_role}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-dark-600">Statut</p>
+                                <p class="text-white font-medium">${data.status}</p>
                             </div>
                             <div>
                                 <p class="text-sm text-dark-600">Date de création</p>
-                                <p class="text-white">${new Date(data.created_at).toLocaleDateString('fr-FR')}</p>
+                                <p class="text-white font-medium">${new Date(data.created_at).toLocaleDateString('fr-FR')}</p>
                             </div>
                         </div>
                     </div>
@@ -265,23 +289,35 @@ function showAgentDetails(agentId) {
                         <h4 class="font-medium text-white mb-4">Assignations</h4>
                         <div class="space-y-3">
                             <div>
+                                <p class="text-sm text-dark-600">Entreprise</p>
+                                <p class="text-white font-medium">${data.company.name}</p>
+                            </div>
+                            <div>
                                 <p class="text-sm text-dark-600">Guichets assignés</p>
                                 <div class="flex flex-wrap gap-2 mt-2">
-                                    ${data.assigned_counters.map(counter => 
-                                        `<span class="px-3 py-1 bg-brand-500/20 text-brand-400 rounded-lg text-sm">${counter.name}</span>`
-                                    ).join('')}
+                                    ${data.assigned_counters.length > 0 
+                                        ? data.assigned_counters.map(counter => 
+                                            `<span class="px-3 py-1 bg-brand-500/20 text-brand-400 rounded-lg text-sm">${counter.name} ${counter.service ? `(${counter.service.name})` : ''}</span>`
+                                        ).join('')
+                                        : '<span class="px-3 py-1 bg-gray-500/20 text-gray-400 rounded-lg text-sm">Non assigné</span>'
+                                    }
                                 </div>
                             </div>
-                            <div>
-                                <p class="text-sm text-dark-600">Rôle dans l'entreprise</p>
-                                <p class="text-white capitalize">${data.pivot_role}</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-dark-600">Statut</p>
-                                <span class="px-3 py-1 rounded-full text-xs font-medium ${data.deleted_at ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}">
-                                    ${data.deleted_at ? 'Supprimé' : 'Actif'}
-                                </span>
-                            </div>
+                            ${data.assigned_counters.length > 0 ? `
+                                <div>
+                                    <p class="text-sm text-dark-600">Détails du guichet</p>
+                                    <div class="mt-2 space-y-2">
+                                        ${data.assigned_counters.map(counter => `
+                                            <div class="bg-dark-700/50 p-3 rounded-lg">
+                                                <p class="text-white font-medium">${counter.name}</p>
+                                                ${counter.service ? `<p class="text-sm text-dark-600">Service: ${counter.service.name}</p>` : ''}
+                                                <p class="text-sm text-dark-600">Localisation: ${counter.location || 'Non spécifiée'}</p>
+                                                <p class="text-sm text-dark-600">Statut: ${counter.status === 'open' ? 'Ouvert' : 'Fermé'}</p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 </div>

@@ -58,12 +58,25 @@
                         @endif
                     </td>
                     <td class="px-6 py-4">
-                        @if($counter->user)
+                        @php
+                            // Récupérer l'agent assigné via company_user
+                            $assignedUser = null;
+                            if ($counter->id) {
+                                $companyUser = \Illuminate\Support\Facades\DB::table('company_user')
+                                    ->where('company_id', $company->id)
+                                    ->where('counter_id', $counter->id)
+                                    ->first();
+                                if ($companyUser) {
+                                    $assignedUser = \App\Models\User::find($companyUser->user_id);
+                                }
+                            }
+                        @endphp
+                        @if($assignedUser)
                             <div class="flex items-center">
                                 <div class="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center text-purple-400 text-xs font-bold">
-                                    {{ substr($counter->user->name, 0, 1) }}
+                                    {{ substr($assignedUser->name, 0, 1) }}
                                 </div>
-                                <span class="ml-2 text-white">{{ $counter->user->name }}</span>
+                                <span class="ml-2 text-white">{{ $assignedUser->name }}</span>
                             </div>
                         @else
                             <span class="px-3 py-1 bg-dark-700 rounded-full text-sm text-dark-600">Non assigné</span>

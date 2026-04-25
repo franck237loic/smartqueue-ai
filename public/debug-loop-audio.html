@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Sonnerie Continue</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; font-weight: bold; }
+        .log { background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
+        .sound-indicator { width: 20px; height: 20px; border-radius: 50%; display: inline-block; margin-left: 10px; }
+        .sound-on { background: #28a745; animation: pulse 1s infinite; }
+        .sound-off { background: #6c757d; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔊 Debug Sonnerie Continue</h1>
+        
+        <div class="card">
+            <h2>📵 Test Audio Direct</h2>
+            <div class="status" id="audioStatus">Prêt à tester</div>
+            <div>
+                <span>Son:</span>
+                <span class="sound-indicator sound-off" id="soundIndicator"></span>
+            </div>
+            
+            <h3>Tests Audio:</h3>
+            <button class="btn btn-primary" onclick="testBasicAudio()">🔊 Test Audio Simple</button>
+            <button class="btn btn-success" onclick="testLoopAudio()">🔄 Test Audio en Boucle</button>
+            <button class="btn btn-warning" onclick="testLoopWithEvents()">⚡ Test Boucle + Events</button>
+            <button class="btn btn-danger" onclick="stopAllAudio()">⏹️ Arrêter Tout</button>
+        </div>
+
+        <div class="card">
+            <h2>🎛️ Configuration Audio</h2>
+            <p><strong>Fichier audio:</strong> /sounds/ticket-called.mp3</p>
+            <p><strong>Volume:</strong> <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.8" onchange="updateVolume(this.value)"></p>
+            <p><strong>Durée test:</strong> <input type="number" id="testDuration" value="10" min="5" max="60"> secondes</p>
+            <button class="btn btn-primary" onclick="testWithConfig()">🎵 Tester avec Configuration</button>
+        </div>
+
+        <div class="card">
+            <h2>📋 Informations Audio</h2>
+            <div id="audioInfo">
+                <p><strong>Support boucle:</strong> <span id="loopSupport">?</span></p>
+                <p><strong>Format supporté:</strong> <span id="formatSupport">?</span></p>
+                <p><strong>État actuel:</strong> <span id="currentState">Aucun audio</span></p>
+                <p><strong>Durée du fichier:</strong> <span id="fileDuration">?</span></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📝 Journal des Événements</h2>
+            <div id="eventLog"></div>
+            <button class="btn btn-warning" onclick="clearLog()">🗑️ Vider le journal</button>
+        </div>
+    </div>
+
+    <script>
+        let currentAudio = null;
+        let loopInterval = null;
+        let testStartTime = null;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('eventLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log';
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function updateStatus(message) {
+            document.getElementById('audioStatus').textContent = message;
+        }
+
+        function updateSoundIndicator(isPlaying) {
+            let indicator = document.getElementById('soundIndicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'soundIndicator';
+                indicator.className = 'sound-indicator sound-off';
+                document.body.appendChild(indicator);
+            }
+            indicator.className = `sound-indicator ${isPlaying ? 'sound-on' : 'sound-off'}`;
+        }
+
+        function updateAudioInfo() {
+            // Test support boucle
+            const testAudio = new Audio();
+            document.getElementById('loopSupport').textContent = testAudio.loop !== undefined ? '✅ Oui' : '❌ Non';
+            
+            // Test format support
+            const audio = new Audio('/sounds/ticket-called.mp3');
+            audio.addEventListener('loadedmetadata', () => {
+                document.getElementById('fileDuration').textContent = audio.duration.toFixed(2) + ' secondes';
+                document.getElementById('formatSupport').textContent = '✅ MP3 supporté';
+            });
+            
+            audio.addEventListener('error', () => {
+                document.getElementById('formatSupport').textContent = '❌ Erreur chargement';
+            });
+        }
+
+        function testBasicAudio() {
+            log('🔊 Test audio simple (sans boucle)');
+            updateStatus('Test audio simple...');
+            
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            currentAudio = new Audio('/sounds/ticket-called.mp3');
+            currentAudio.volume = 0.8;
+            
+            currentAudio.addEventListener('play', () => {
+                log('▶️ Audio démarré');
+                updateSoundIndicator(true);
+                updateStatus('Audio en lecture (simple)');
+            });
+            
+            currentAudio.addEventListener('ended', () => {
+                log('⏹️ Audio terminé');
+                updateSoundIndicator(false);
+                updateStatus('Audio terminé (simple)');
+            });
+            
+            currentAudio.addEventListener('error', (e) => {
+                log('❌ Erreur audio: ' + e.message);
+                updateSoundIndicator(false);
+                updateStatus('Erreur audio');
+            });
+            
+            currentAudio.play().catch(error => {
+                log('❌ Erreur lecture: ' + error.message);
+                updateStatus('Erreur lecture');
+            });
+        }
+
+        function testLoopAudio() {
+            log('🔄 Test audio en boucle (loop=true)');
+            updateStatus('Test audio en boucle...');
+            
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            currentAudio = new Audio('/sounds/ticket-called.mp3');
+            currentAudio.loop = true;
+            currentAudio.volume = 0.8;
+            
+            let loopCount = 0;
+            
+            currentAudio.addEventListener('play', () => {
+                log('▶️ Audio démarré en boucle');
+                updateSoundIndicator(true);
+                updateStatus('Audio en boucle');
+                testStartTime = Date.now();
+            });
+            
+            currentAudio.addEventListener('timeupdate', () => {
+                if (currentAudio && currentAudio.currentTime > 0 && currentAudio.currentTime < 0.1) {
+                    loopCount++;
+                    log('🔄 Boucle #' + loopCount + ' - Temps: ' + currentAudio.currentTime.toFixed(2) + 's');
+                }
+            });
+            
+            currentAudio.addEventListener('ended', () => {
+                log('⏹️ Boucle terminée (redémarrage automatique)');
+            });
+            
+            currentAudio.addEventListener('error', (e) => {
+                log('❌ Erreur boucle: ' + e.message);
+                updateSoundIndicator(false);
+                updateStatus('Erreur boucle');
+            });
+            
+            currentAudio.play().catch(error => {
+                log('❌ Erreur lecture boucle: ' + error.message);
+                updateStatus('Erreur lecture boucle');
+            });
+            
+            // Arrêter après 10 secondes pour le test
+            setTimeout(() => {
+                if (currentAudio && currentAudio.loop) {
+                    log('⏹️ Arrêt du test après 10 secondes');
+                    stopAllAudio();
+                }
+            }, 10000);
+        }
+
+        function testLoopWithEvents() {
+            log('⚡ Test boucle avec events détaillés');
+            updateStatus('Test boucle avancé...');
+            
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            currentAudio = new Audio('/sounds/ticket-called.mp3');
+            currentAudio.loop = true;
+            currentAudio.volume = parseFloat(document.getElementById('volumeSlider').value);
+            
+            // Events détaillés
+            const events = ['loadstart', 'loadeddata', 'canplay', 'play', 'playing', 'timeupdate', 'waiting', 'ended', 'error'];
+            
+            events.forEach(eventType => {
+                currentAudio.addEventListener(eventType, () => {
+                    log('📡 Event: ' + eventType + ' - currentTime: ' + (currentAudio && !isNaN(currentAudio.currentTime) ? currentAudio.currentTime.toFixed(2) : 'N/A') + 's');
+                });
+            });
+            
+            currentAudio.play().then(() => {
+                log('✅ Lecture démarrée avec succès');
+                updateSoundIndicator(true);
+                updateStatus('Boucle active');
+            }).catch(error => {
+                log('❌ Erreur lecture: ' + error.message);
+                updateStatus('Erreur lecture');
+            });
+            
+            // Monitor de boucle
+            let lastTime = 0;
+            const monitorInterval = setInterval(() => {
+                if (currentAudio && !isNaN(currentAudio.currentTime) && currentAudio.currentTime < lastTime) {
+                    log('🔄 Redémarrage de la boucle détecté!');
+                }
+                lastTime = (currentAudio && !isNaN(currentAudio.currentTime)) ? currentAudio.currentTime : 0;
+            }, 100);
+            
+            // Nettoyer après le test
+            setTimeout(() => {
+                clearInterval(monitorInterval);
+                stopAllAudio();
+            }, 15000);
+        }
+
+        function testWithConfig() {
+            const volume = parseFloat(document.getElementById('volumeSlider').value);
+            const duration = parseInt(document.getElementById('testDuration').value) * 1000;
+            
+            log('🎛️ Test avec configuration personnalisée');
+            log('📊 Volume: ' + volume + ', Durée: ' + (duration/1000) + 's');
+            
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            currentAudio = new Audio('/sounds/ticket-called.mp3');
+            currentAudio.loop = true;
+            currentAudio.volume = volume;
+            
+            currentAudio.play().then(() => {
+                log('✅ Configuration appliquée avec succès');
+                updateSoundIndicator(true);
+                updateStatus('Test personnalisé en cours');
+                
+                // Arrêter après la durée spécifiée
+                setTimeout(() => {
+                    log('⏹️ Test personnalisé terminé');
+                    stopAllAudio();
+                }, duration);
+            }).catch(error => {
+                log('❌ Erreur avec configuration: ' + error.message);
+            });
+        }
+
+        function stopAllAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+            
+            if (loopInterval) {
+                clearInterval(loopInterval);
+                loopInterval = null;
+            }
+            
+            updateSoundIndicator(false);
+            updateStatus('Audio arrêté');
+            log('⏹️ Tous les sons arrêtés');
+        }
+
+        function updateVolume(value) {
+            if (currentAudio && !isNaN(currentAudio.volume)) {
+                currentAudio.volume = parseFloat(value);
+                log('🔊 Volume mis à jour: ' + value);
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '';
+            log('📝 Journal vidé');
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Page de debug audio chargée');
+            updateAudioInfo();
+            updateStatus('Prêt à tester');
+            
+            // Mettre à jour l'état actuel régulièrement
+            setInterval(() => {
+                const state = currentAudio && !isNaN(currentAudio.currentTime) ? 
+                    (currentAudio.paused ? 'En pause' : 'En lecture') + 
+                    (currentAudio.loop ? ' (boucle)' : '') : 
+                    'Aucun audio';
+                document.getElementById('currentState').textContent = state;
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

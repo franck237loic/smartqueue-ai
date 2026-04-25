@@ -480,7 +480,9 @@
 
     <!-- Initialize Lucide Icons -->
     <script>
-        lucide.createIcons();
+        if (window.lucide) {
+            window.lucide.createIcons({ icons: window.lucide.icons });
+        }
     </script>
 </body>
 </html>

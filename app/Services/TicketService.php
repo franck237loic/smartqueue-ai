@@ -156,7 +156,7 @@ class TicketService
     {
         $count = 0;
         
-        Ticket::where('status', Ticket::STATUS_MISSED_TEMP)
+        Ticket::where('status', Ticket::STATUS_MISSED)
             ->where('missed_at', '<=', now()->subSeconds(30)) // 30 sec avant réinsertion
             ->chunk(100, function ($tickets) use (&$count) {
                 foreach ($tickets as $ticket) {
@@ -359,7 +359,7 @@ class TicketService
             'called' => $service->tickets()->where('status', Ticket::STATUS_CALLED)->count(),
             'serving' => $service->tickets()->where('status', Ticket::STATUS_SERVING)->count(),
             'served' => $service->tickets()->where('status', Ticket::STATUS_SERVED)->whereDate('served_at', $today)->count(),
-            'missed_temp' => $service->tickets()->where('status', Ticket::STATUS_MISSED_TEMP)->count(),
+            'missed' => $service->tickets()->where('status', Ticket::STATUS_MISSED)->count(),
             'cancelled' => $service->tickets()->where('status', Ticket::STATUS_CANCELLED)->whereDate('cancelled_at', $today)->count(),
             'avg_service_seconds' => $service->tickets()
                 ->where('status', Ticket::STATUS_SERVED)
@@ -381,7 +381,7 @@ class TicketService
             'called' => $company->tickets()->where('status', Ticket::STATUS_CALLED)->count(),
             'serving' => $company->tickets()->where('status', Ticket::STATUS_SERVING)->count(),
             'served' => $company->tickets()->where('status', Ticket::STATUS_SERVED)->whereDate('served_at', $today)->count(),
-            'missed_temp' => $company->tickets()->where('status', Ticket::STATUS_MISSED_TEMP)->count(),
+            'missed' => $company->tickets()->where('status', Ticket::STATUS_MISSED)->count(),
             'cancelled' => $company->tickets()->where('status', Ticket::STATUS_CANCELLED)->whereDate('cancelled_at', $today)->count(),
             'avg_wait_seconds' => $company->tickets()
                 ->where('status', Ticket::STATUS_SERVED)
@@ -401,7 +401,7 @@ class TicketService
     public function getQueue(Service $service): array
     {
         $tickets = Ticket::where('service_id', $service->id)
-            ->whereIn('status', [Ticket::STATUS_WAITING, Ticket::STATUS_MISSED_TEMP])
+            ->whereIn('status', [Ticket::STATUS_WAITING, Ticket::STATUS_MISSED])
             ->orderBy('priority', 'desc')
             ->orderBy('created_at', 'asc')
             ->get();
@@ -422,10 +422,33 @@ class TicketService
     public function recallTicket(Ticket $ticket, User $agent): void
     {
         \DB::transaction(function () use ($ticket, $agent) {
-            // Vérifier que le ticket est en attente
-            if ($ticket->status !== Ticket::STATUS_WAITING) {
-                throw new \Exception('Seuls les tickets en attente peuvent être rappelés');
+            // Statuts qui ne peuvent pas être rappelés
+            $nonRecallableStatuses = [
+                Ticket::STATUS_SERVED,
+                Ticket::STATUS_CANCELLED,
+                Ticket::STATUS_TRANSFERRED,
+            ];
+            
+            // Vérifier que le ticket peut être rappelé
+            if (in_array($ticket->status, $nonRecallableStatuses)) {
+                $statusMessages = [
+                    Ticket::STATUS_SERVED => 'Les tickets déjà servis ne peuvent pas être rappelés',
+                    Ticket::STATUS_CANCELLED => 'Les tickets annulés ne peuvent pas être rappelés',
+                    Ticket::STATUS_TRANSFERRED => 'Les tickets transférés ne peuvent pas être rappelés',
+                ];
+                
+                $message = $statusMessages[$ticket->status] ?? 'Ce ticket ne peut pas être rappelé';
+                throw new \Exception($message);
             }
+            
+            // Log du rappel
+            \Log::info('Ticket recall attempt', [
+                'ticket_id' => $ticket->id,
+                'ticket_number' => $ticket->number,
+                'current_status' => $ticket->status,
+                'agent_id' => $agent->id,
+                'agent_name' => $agent->name,
+            ]);
 
             // Vérifier que l'agent a accès au service du ticket
             $hasAccess = $agent->assignedCounters()

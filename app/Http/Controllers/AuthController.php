@@ -53,8 +53,8 @@ class AuthController extends Controller
             return redirect()->route('super_admin.dashboard');
         }
         
-        // Récupérer les entreprises de l'utilisateur
-        $companies = $user->companies;
+        // Récupérer les entreprises de l'utilisateur avec eager loading optimisé
+        $companies = $user->companies()->withPivot(['role', 'counter_id'])->get();
         
         if ($companies->count() === 0) {
             \Log::error('Aucune entreprise associée à l\'utilisateur');

@@ -46,6 +46,11 @@ class Counter extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function workSchedules()
+    {
+        return $this->hasMany(WorkSchedule::class);
+    }
+
     public function tickets(): HasMany
     {
         return $this->hasMany(Ticket::class);
@@ -64,6 +69,21 @@ class Counter extends Model
         return $this->status === 'open' && $this->is_active;
     }
 
+    public function isPaused(): bool
+    {
+        return $this->status === 'paused' && $this->is_active;
+    }
+
+    public function isAutoClosed(): bool
+    {
+        return $this->status === 'auto_closed';
+    }
+
+    public function isOffline(): bool
+    {
+        return $this->status === 'offline' || !$this->is_active;
+    }
+
     public function open(): void
     {
         $this->update([
@@ -79,6 +99,40 @@ class Counter extends Model
             'status' => 'closed',
             'is_active' => false,
             'closed_at' => now(),
+        ]);
+    }
+
+    public function pause(): void
+    {
+        $this->update([
+            'status' => 'paused',
+            'paused_at' => now(),
+        ]);
+    }
+
+    public function resume(): void
+    {
+        $this->update([
+            'status' => 'open',
+            'is_active' => true,
+        ]);
+    }
+
+    public function autoClose(): void
+    {
+        $this->update([
+            'status' => 'auto_closed',
+            'is_active' => false,
+            'auto_closed_at' => now(),
+        ]);
+    }
+
+    public function setOffline(): void
+    {
+        $this->update([
+            'status' => 'offline',
+            'is_active' => false,
+            'offline_at' => now(),
         ]);
     }
 }

@@ -38,27 +38,27 @@ class Queue extends Model
 
     public function waitingTickets()
     {
-        return $this->tickets()->where('status', 'waiting')->orderBy('created_at');
+        return $this->tickets()->where('status', 'WAITING')->orderBy('created_at');
     }
 
     public function calledTickets()
     {
-        return $this->tickets()->where('status', 'called')->orderBy('called_at');
+        return $this->tickets()->where('status', 'CALLED')->orderBy('called_at');
     }
 
     public function servedTickets()
     {
-        return $this->tickets()->where('status', 'served');
+        return $this->tickets()->where('status', 'SERVED');
     }
 
     public function missedTickets()
     {
-        return $this->tickets()->where('status', 'missed');
+        return $this->tickets()->where('status', 'MISSED_TEMP');
     }
 
     public function isActive(): bool
     {
-        return $this->status === 'active';
+        return $this->status === 'ACTIVE';
     }
 
     public function getNextTicketNumber(): string

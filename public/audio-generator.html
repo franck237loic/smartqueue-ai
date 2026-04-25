@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Sons SmartQueue</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; border: none; }
+        .btn-success { background: #28a745; color: white; border: none; }
+        .btn-warning { background: #ffc107; color: black; border: none; }
+        .btn-danger { background: #dc3545; color: white; border: none; }
+        .status { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔊 Générateur de Sons SmartQueue AI</h1>
+    
+    <div class="status" id="status">Cliquez sur un bouton pour générer et écouter le son</div>
+
+    <h2>📞 Sons d'Appel</h2>
+    <button class="btn-primary" onclick="generateTicketCall()">Générer "Ticket Called" (Son d'appel)</button>
+    <button class="btn-success" onclick="downloadSound('ticket-called')">Télécharger ticket-called.mp3</button>
+
+    <h2>🔔 Notifications Client</h2>
+    <button class="btn-warning" onclick="generateClientNotification()">Générer "Client Notification" (Avancement)</button>
+    <button class="btn-success" onclick="downloadSound('client-notification')">Télécharger client-notification.mp3</button>
+
+    <h2>⚠️ Rappels</h2>
+    <button class="btn-danger" onclick="generateRecall()">Générer "Recall" (Rappel urgent)</button>
+    <button class="btn-success" onclick="downloadSound('preparation-alert')">Télécharger preparation-alert.mp3</button>
+
+    <h2>👨‍💼 Notifications Agent</h2>
+    <button class="btn-primary" onclick="generateAgentNotification()">Générer "Agent Notification"</button>
+    <button class="btn-success" onclick="downloadSound('agent-notification')">Télécharger agent-notification.mp3</button>
+
+    <h2>❌ Ticket Absent</h2>
+    <button class="btn-danger" onclick="generateMissed()">Générer "Ticket Missed" (Absence)</button>
+    <button class="btn-success" onclick="downloadSound('ticket-absent')">Télécharger ticket-absent.mp3</button>
+
+    <script>
+        let audioContext;
+        let currentBlob;
+        let currentSoundName;
+
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        // Son d'appel de ticket - 3 bips ascendantes
+        function generateTicketCall() {
+            initAudioContext();
+            updateStatus('Génération du son d\'appel de ticket...');
+            
+            const duration = 1.5;
+            const sampleRate = audioContext.sampleRate;
+            const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // 3 bips ascendantes : 800Hz -> 1000Hz -> 1200Hz
+            const frequencies = [800, 1000, 1200];
+            const beepDuration = 0.2;
+            const beepGap = 0.3;
+
+            frequencies.forEach((freq, index) => {
+                const startTime = index * (beepDuration + beepGap);
+                const endTime = startTime + beepDuration;
+                
+                for (let i = Math.floor(startTime * sampleRate); i < Math.floor(endTime * sampleRate); i++) {
+                    const t = (i - startTime * sampleRate) / sampleRate;
+                    data[i] = Math.sin(2 * Math.PI * freq * t) * 0.3 * (1 - t / beepDuration); // Fade out
+                }
+            });
+
+            playAndSave(buffer, 'ticket-called');
+        }
+
+        // Notification client - son doux et court
+        function generateClientNotification() {
+            initAudioContext();
+            updateStatus('Génération de la notification client...');
+            
+            const duration = 0.8;
+            const sampleRate = audioContext.sampleRate;
+            const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // Son doux : 600Hz avec enveloppe ADSR
+            for (let i = 0; i < data.length; i++) {
+                const t = i / sampleRate;
+                const envelope = Math.exp(-t * 3); // Exponential decay
+                data[i] = Math.sin(2 * Math.PI * 600 * t) * 0.2 * envelope;
+            }
+
+            playAndSave(buffer, 'client-notification');
+        }
+
+        // Rappel urgent - son rapide et aigu
+        function generateRecall() {
+            initAudioContext();
+            updateStatus('Génération du son de rappel urgent...');
+            
+            const duration = 1.0;
+            const sampleRate = audioContext.sampleRate;
+            const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // 4 bips rapides à 1200Hz
+            const beepCount = 4;
+            const beepDuration = 0.1;
+            const beepGap = 0.15;
+
+            for (let beep = 0; beep < beepCount; beep++) {
+                const startTime = beep * (beepDuration + beepGap);
+                const endTime = startTime + beepDuration;
+                
+                for (let i = Math.floor(startTime * sampleRate); i < Math.floor(endTime * sampleRate); i++) {
+                    const t = (i - startTime * sampleRate) / sampleRate;
+                    data[i] = Math.sin(2 * Math.PI * 1200 * t) * 0.4 * (1 - t / beepDuration);
+                }
+            }
+
+            playAndSave(buffer, 'preparation-alert');
+        }
+
+        // Notification agent - son professionnel
+        function generateAgentNotification() {
+            initAudioContext();
+            updateStatus('Génération de la notification agent...');
+            
+            const duration = 0.6;
+            const sampleRate = audioContext.sampleRate;
+            const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // Son professionnel : 1000Hz court
+            for (let i = 0; i < data.length; i++) {
+                const t = i / sampleRate;
+                const envelope = t < 0.1 ? t / 0.1 : Math.exp(-(t - 0.1) * 10);
+                data[i] = Math.sin(2 * Math.PI * 1000 * t) * 0.3 * envelope;
+            }
+
+            playAndSave(buffer, 'agent-notification');
+        }
+
+        // Ticket absent - son grave et descendant
+        function generateMissed() {
+            initAudioContext();
+            updateStatus('Génération du son de ticket absent...');
+            
+            const duration = 1.2;
+            const sampleRate = audioContext.sampleRate;
+            const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // Son descendant : 500Hz -> 300Hz
+            for (let i = 0; i < data.length; i++) {
+                const t = i / sampleRate;
+                const freq = 500 - (200 * t); // Descend de 500Hz à 300Hz
+                const envelope = Math.exp(-t * 2);
+                data[i] = Math.sin(2 * Math.PI * freq * t) * 0.3 * envelope;
+            }
+
+            playAndSave(buffer, 'ticket-absent');
+        }
+
+        function playAndSave(buffer, soundName) {
+            // Jouer le son
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start();
+            source.onended = () => updateStatus(`Son "${soundName}" généré et joué! Prêt à télécharger.`);
+
+            // Convertir en Blob pour téléchargement
+            const wav = audioBufferToWav(buffer);
+            currentBlob = new Blob([wav], { type: 'audio/wav' });
+            currentSoundName = soundName;
+        }
+
+        function audioBufferToWav(buffer) {
+            const length = buffer.length * buffer.numberOfChannels * 2 + 44;
+            const arrayBuffer = new ArrayBuffer(length);
+            const view = new DataView(arrayBuffer);
+            const channels = [];
+            let offset = 0;
+            let pos = 0;
+
+            // Écriture header WAV
+            const setUint16 = (data) => {
+                view.setUint16(pos, data, true);
+                pos += 2;
+            };
+            const setUint32 = (data) => {
+                view.setUint32(pos, data, true);
+                pos += 4;
+            };
+
+            // RIFF chunk descriptor
+            setUint32(0x46464952); // "RIFF"
+            setUint32(length - 8); // file length - 8
+            setUint32(0x45564157); // "WAVE"
+
+            // fmt sub-chunk
+            setUint32(0x20746d66); // "fmt "
+            setUint32(16); // chunk length = 16
+            setUint16(1); // PCM = 1
+            setUint16(buffer.numberOfChannels); // num channels
+            setUint32(buffer.sampleRate); // sample rate
+            setUint32(buffer.sampleRate * 2 * buffer.numberOfChannels); // byte rate
+            setUint16(buffer.numberOfChannels * 2); // block align
+            setUint16(16); // bits per sample
+
+            // data sub-chunk
+            setUint32(0x61746164); // "data"
+            setUint32(length - pos - 4); // chunk length
+
+            // Écriture données audio
+            for (let i = 0; i < buffer.numberOfChannels; i++) {
+                channels.push(buffer.getChannelData(i));
+            }
+
+            while (pos < length) {
+                for (let i = 0; i < buffer.numberOfChannels; i++) {
+                    let sample = Math.max(-1, Math.min(1, channels[i][offset]));
+                    sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+                    view.setInt16(pos, sample, true);
+                    pos += 2;
+                }
+                offset++;
+            }
+
+            return arrayBuffer;
+        }
+
+        function downloadSound(soundName) {
+            if (!currentBlob || currentSoundName !== soundName) {
+                updateStatus(`Veuillez d'abord générer le son "${soundName}"`);
+                return;
+            }
+
+            const url = URL.createObjectURL(currentBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${soundName}.wav`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            updateStatus(`Fichier "${soundName}.wav" téléchargé! Placez-le dans le dossier /sounds et renommez-le en .mp3`);
+        }
+    </script>
+</body>
+</html>

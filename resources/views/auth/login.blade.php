@@ -572,10 +572,6 @@
             <!-- Footer -->
             <div class="login-footer">
                 <p>
-                    Pas encore de compte ? 
-                    <a href="{{ route('register') }}" class="link">Créer un compte</a>
-                </p>
-                <p style="margin-top: 0.5rem;">
                     <a href="{{ route('welcome') }}" class="link">Retour à l'accueil</a>
                 </p>
             </div>

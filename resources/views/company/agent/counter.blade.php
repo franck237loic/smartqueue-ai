@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.modern-sidebar')
 
 @section('title', $counter->name . ' - ' . $company->name)
 
@@ -112,16 +112,25 @@
                     </div>
                     <div class="divide-y divide-slate-200">
                         @forelse($waitingTickets as $ticket)
-                        <div class="px-6 py-3 flex justify-between items-center">
+                        <div class="px-6 py-3 flex justify-between items-center hover:bg-slate-50 transition-colors">
                             <div>
                                 <span class="font-medium text-slate-900">{{ $ticket->number }}</span>
                                 <span class="ml-2 text-sm text-slate-500">
                                     En attente depuis {{ $ticket->created_at->diffForHumans() }}
                                 </span>
+                                @if($ticket->guest_name)
+                                    <span class="ml-2 text-sm text-slate-600">• {{ $ticket->guest_name }}</span>
+                                @endif
                             </div>
-                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                En attente
-                            </span>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                    En attente
+                                </span>
+                                <button onclick="recallTicket({{ $ticket->id }})" 
+                                        class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
+                                    📞 Rappeler
+                                </button>
+                            </div>
                         </div>
                         @empty
                         <div class="px-6 py-8 text-center text-slate-500">
@@ -136,11 +145,46 @@
             <div class="space-y-6">
                 <!-- Statut du guichet -->
                 <div class="bg-white rounded-xl shadow p-6">
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center mb-4">
                         <span class="text-slate-600">Statut</span>
                         <span class="px-3 py-1 rounded-full text-sm font-medium {{ $counter->isOpen() ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                             {{ $counter->isOpen() ? 'Ouvert' : 'Fermé' }}
                         </span>
+                    </div>
+                    
+                    <!-- Actions du guichet -->
+                    <div class="space-y-3">
+                        @if($counter->isOpen())
+                            <form method="POST" action="{{ route('company.agent.counter.close', [$company, $counter]) }}">
+                                @csrf
+                                <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
+                                    Fermer le guichet
+                                </button>
+                            </form>
+                            
+                            <form method="POST" action="{{ route('company.agent.counter.pause', [$company, $counter]) }}">
+                                @csrf
+                                <button type="submit" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium">
+                                    Mettre en pause
+                                </button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('company.agent.counter.open', [$company, $counter]) }}">
+                                @csrf
+                                <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                                    Ouvrir le guichet
+                                </button>
+                            </form>
+                        @endif
+                        
+                        @if($counter->isPaused())
+                            <form method="POST" action="{{ route('company.agent.counter.resume', [$company, $counter]) }}">
+                                @csrf
+                                <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                                    Reprendre le service
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
 
@@ -169,4 +213,82 @@
         </div>
     </div>
 </div>
+
+<script>
+// Rafraîchissement automatique de la file d'attente
+let refreshInterval;
+
+function startAutoRefresh() {
+    refreshInterval = setInterval(() => {
+        refreshQueue();
+    }, 5000); // Rafraîchir toutes les 5 secondes
+}
+
+function refreshQueue() {
+    fetch(window.location.href, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newQueue = doc.querySelector('.divide-y.divide-slate-200');
+        const currentQueue = document.querySelector('.divide-y.divide-slate-200');
+        
+        if (newQueue && currentQueue) {
+            currentQueue.innerHTML = newQueue.innerHTML;
+        }
+        
+        // Mettre à jour le compteur de tickets en attente
+        const newCount = doc.querySelector('p.text-sm.text-slate-500');
+        const currentCount = document.querySelector('p.text-sm.text-slate-500');
+        if (newCount && currentCount) {
+            currentCount.textContent = newCount.textContent;
+        }
+    })
+    .catch(error => {
+        console.log('Erreur lors du rafraîchissement:', error);
+    });
+}
+
+// Fonction pour rappeler un ticket
+function recallTicket(ticketId) {
+    if (confirm('Voulez-vous vraiment rappeler ce ticket ?')) {
+        fetch(`/api/tickets/${ticketId}/recall`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Ticket rappelé avec succès !');
+                refreshQueue();
+            } else {
+                alert('Erreur lors du rappel: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors du rappel du ticket');
+        });
+    }
+}
+
+// Démarrer le rafraîchissement automatique
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh();
+});
+
+// Arrêter le rafraîchissement quand on quitte la page
+window.addEventListener('beforeunload', function() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+});
+</script>
 @endsection

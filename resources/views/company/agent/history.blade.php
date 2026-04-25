@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.modern-sidebar')
 
 @section('title', 'Historique - SmartQueue AI')
 

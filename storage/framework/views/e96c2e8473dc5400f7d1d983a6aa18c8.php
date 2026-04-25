@@ -264,7 +264,6 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <a href="<?php echo e(route('login')); ?>" class="text-sm font-medium text-gray-600 hover:text-primary transition">Connexion</a>
-                    <a href="<?php echo e(route('register')); ?>" class="text-sm font-medium px-4 py-2 rounded-lg bg-primary text-white hover:bg-blue-600 transition">Inscription</a>
                 </div>
             </div>
         </div>

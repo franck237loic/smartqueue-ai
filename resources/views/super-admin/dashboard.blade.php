@@ -3,7 +3,7 @@
 @section('title', 'Super Admin - Dashboard')
 
 @section('content')
-<div class="space-y-8" x-data="{ stats: @json($stats) }">
+<div class="space-y-8" x-data="{ stats: {!! json_encode($stats ?? []) !!} }">
     <!-- Header avec animation -->
     <div class="flex items-center justify-between">
         <div class="space-y-2">

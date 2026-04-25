@@ -23,11 +23,30 @@ class AgentOnly
         }
 
         $user = Auth::user();
-
-        // Vérifier que l'utilisateur a le rôle d'agent dans l'entreprise
         $company = $request->route('company');
+
+        // Log pour debug
+        \Log::info('AgentOnly middleware', [
+            'user_id' => $user->id,
+            'company_id' => $company->id ?? 'null',
+            'company_type' => gettype($company)
+        ]);
+
+        // Vérifier si l'utilisateur appartient à l'entreprise
+        if (!$user->hasAccessToCompany($company)) {
+            \Log::error('AgentOnly: No access to company', ['user_id' => $user->id, 'company_id' => $company->id]);
+            abort(403, 'Vous n\'avez pas accès à cette entreprise.');
+        }
         
+        // Vérifier le rôle dans l'entreprise (uniquement 'agent')
         if (!$user->isAgentInCompany($company)) {
+            \Log::info('AgentOnly: User is not agent, checking redirect', [
+                'user_id' => $user->id,
+                'company_id' => $company->id,
+                'is_super_admin' => $user->isSuperAdmin(),
+                'is_company_admin' => $user->companies()->where('company_id', $company->id)->wherePivot('role', 'company_admin')->exists()
+            ]);
+            
             // Si l'utilisateur n'est pas un agent, rediriger vers le dashboard approprié
             if ($user->isSuperAdmin()) {
                 return redirect()->route('super_admin.dashboard');
@@ -39,6 +58,7 @@ class AgentOnly
             abort(403, 'Accès réservé aux agents');
         }
 
+        \Log::info('AgentOnly: Access granted', ['user_id' => $user->id, 'company_id' => $company->id]);
         return $next($request);
     }
 }

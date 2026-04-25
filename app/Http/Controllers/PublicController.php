@@ -136,19 +136,38 @@ class PublicController extends Controller
     /**
      * Confirmer la présence du client
      */
-    public function confirmPresence(Request $request, Company $company, Ticket $ticket)
+    public function confirmPresence(Request $request, Ticket $ticket)
     {
-        if ($ticket->company_id !== $company->id) {
-            abort(404);
-        }
-
         try {
-            $ticket->markPresent();
-
-            return back()->with('success', 'Présence confirmée pour le ticket ' . $ticket->number . '.');
+            // Vérifier que le ticket est bien appelé
+            if ($ticket->status !== 'CALLED') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ce ticket n\'est pas actuellement appelé'
+                ], 400);
+            }
+            
+            // Mettre le statut à PRESENT et enregistrer present_at
+            $ticket->status = 'PRESENT';
+            $ticket->present_at = now();
+            $ticket->save();
+            
+            // Déclencher l'event temps réel
+            event(new \App\Events\ClientConfirmedPresence($ticket));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Présence confirmée! L\'agent a été notifié.',
+                'ticket_status' => $ticket->status,
+                'present_at' => $ticket->present_at->format('H:i:s'),
+                'ticket_number' => $ticket->number
+            ]);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Erreur lors de la confirmation de présence: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la confirmation: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -197,6 +216,66 @@ class PublicController extends Controller
             ->get();
 
         return view('public.display', compact('company', 'services', 'calledTickets'));
+    }
+
+    /**
+     * Obtenir les statistiques de l'entreprise pour le dashboard agent
+     */
+    public function getStats(Company $company)
+    {
+        $today = now()->format('Y-m-d');
+        
+        $stats = [
+            'served_today' => $company->tickets()
+                ->where('status', 'SERVED')
+                ->whereDate('updated_at', $today)
+                ->count(),
+            'missed_today' => $company->tickets()
+                ->where('status', 'MISSED_TEMP')
+                ->whereDate('updated_at', $today)
+                ->count(),
+            'present_today' => $company->tickets()
+                ->where('status', 'PRESENT')
+                ->whereDate('updated_at', $today)
+                ->count(),
+            'waiting_count' => $company->tickets()
+                ->where('status', 'WAITING')
+                ->count(),
+            'called_count' => $company->tickets()
+                ->where('status', 'CALLED')
+                ->count(),
+        ];
+        
+        return response()->json($stats);
+    }
+
+    /**
+     * Obtenir les tickets en attente pour le dashboard agent
+     */
+    public function getWaitingTickets(Company $company)
+    {
+        $waitingTickets = $company->tickets()
+            ->where('status', 'WAITING')
+            ->with(['service'])
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function ($ticket, $index) {
+                return [
+                    'id' => $ticket->id,
+                    'number' => $ticket->number,
+                    'client_name' => $ticket->client_name,
+                    'service' => $ticket->service->name,
+                    'position' => $index + 1,
+                    'created_at' => $ticket->created_at->format('H:i:s'),
+                    'wait_time' => $ticket->created_at->diffInMinutes(now()),
+                ];
+            });
+
+        return response()->json([
+            'tickets' => $waitingTickets,
+            'total_count' => $waitingTickets->count(),
+            'updated_at' => now()->format('H:i:s')
+        ]);
     }
 
     // ========== HELPERS ==========

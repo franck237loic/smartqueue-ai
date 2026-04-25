@@ -353,6 +353,210 @@
                     location.reload();
                 }
             });
+        
+        // Écouter les confirmations de présence client
+        window.Echo.private('agent-dashboard.{{ $company->id }}')
+            .listen('.client.present', (e) => {
+                console.log('Client presence confirmed:', e);
+                
+                // Notification sonore
+                playNotificationSound();
+                
+                // Notification visuelle
+                showClientPresenceNotification(e);
+                
+                // Mettre à jour l'interface si c'est le ticket actuel
+                if (e.ticket_id === currentTicketId) {
+                    updateCurrentTicketStatus(e);
+                }
+                
+                // Mettre à jour les statistiques
+                updateStats();
+            })
+            .listen('.ticket.recalled', (e) => {
+                console.log('Ticket rappelé:', e);
+                
+                // Notification sonore pour le rappel
+                playRecallSound(e.recall.count);
+                
+                // Notification visuelle pour l'agent
+                showRecallNotification(e);
+                
+                // Mettre à jour l'interface
+                if (e.ticket.id === currentTicketId) {
+                    updateRecallStatus(e);
+                }
+            })
+            .listen('.queue.position.updated', (e) => {
+                console.log('Position mise à jour:', e);
+                
+                // Mettre à jour la file d'attente
+                updateQueueDisplay();
+            });
+    }
+    
+    // Fonction de notification sonore
+    function playNotificationSound() {
+        try {
+            const audio = new Audio('/sounds/agent-notification.mp3');
+            audio.play().catch(e => console.log('Erreur lecture son agent:', e));
+        } catch (error) {
+            console.log('Erreur son:', error);
+        }
+    }
+    
+    // Fonction de son pour les rappels
+    function playRecallSound(recallCount) {
+        try {
+            const soundFile = recallCount > 1 ? '/sounds/preparation-alert.mp3' : '/sounds/ticket-called.mp3';
+            const audio = new Audio(soundFile);
+            audio.play().catch(e => console.log('Erreur lecture son rappel:', e));
+        } catch (error) {
+            console.log('Erreur son rappel:', error);
+        }
+    }
+    
+    // Fonction de notification visuelle
+    function showClientPresenceNotification(data) {
+        // Créer une notification temporaire
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full';
+        notification.innerHTML = `
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold">Client Présent!</p>
+                    <p class="text-sm">Ticket ${data.ticket_number} - ${data.client_name}</p>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animation d'entrée
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+            notification.classList.add('translate-x-0');
+        }, 100);
+        
+        // Retrait automatique après 5 secondes
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 5000);
+    }
+    
+    // Mettre à jour le statut du ticket actuel
+    function updateCurrentTicketStatus(data) {
+        const statusElement = document.getElementById('currentTicketStatus');
+        if (statusElement) {
+            statusElement.innerHTML = `
+                <span class="px-4 py-2 bg-green-100 text-green-800 rounded-full font-medium">
+                    ✅ Présent confirmé
+                </span>
+            `;
+        }
+        
+        // Mettre à jour l'heure de présence
+        const presentAtElement = document.getElementById('presentAt');
+        if (presentAtElement) {
+            presentAtElement.textContent = data.present_at;
+        }
+    }
+    
+    // Mettre à jour les statistiques
+    function updateStats() {
+        // Recharger les statistiques sans recharger toute la page
+        fetch('/company/{{ $company->id }}/stats')
+            .then(response => response.json())
+            .then(data => {
+                // Mettre à jour les compteurs
+                const servedElement = document.getElementById('servedCount');
+                if (servedElement) servedElement.textContent = data.served_today;
+                
+                const missedElement = document.getElementById('missedCount');
+                if (missedElement) missedElement.textContent = data.missed_today;
+            })
+            .catch(error => console.error('Error updating stats:', error));
+    }
+    
+    // Fonction pour afficher la notification de rappel
+    function showRecallNotification(data) {
+        const notification = document.createElement('div');
+        const urgencyClass = data.urgency === 'critical' ? 'bg-red-500' : (data.urgency === 'high' ? 'bg-orange-500' : 'bg-yellow-500');
+        notification.className = `fixed top-4 right-4 ${urgencyClass} text-white px-6 py-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full`;
+        notification.innerHTML = `
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold">Rappel Ticket</p>
+                    <p class="text-sm">${data.ticket.number} - ${data.ticket.client_name}</p>
+                    <p class="text-xs">${data.recall.count > 1 ? `${data.recall.count}ème rappel` : 'Premier rappel'}</p>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animation d'entrée
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+            notification.classList.add('translate-x-0');
+        }, 100);
+        
+        // Retrait automatique après 6 secondes
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, 6000);
+    }
+    
+    // Mettre à jour le statut de rappel
+    function updateRecallStatus(data) {
+        const statusElement = document.getElementById('currentTicketStatus');
+        if (statusElement) {
+            const urgencyClass = data.urgency === 'critical' ? 'bg-red-100 text-red-800' : (data.urgency === 'high' ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800');
+            statusElement.innerHTML = `
+                <span class="px-4 py-2 ${urgencyClass} rounded-full font-medium">
+                    🔄 Rappel (${data.recall.count})
+                </span>
+            `;
+        }
+    }
+    
+    // Mettre à jour l'affichage de la file d'attente
+    function updateQueueDisplay() {
+        // Rafraîchir la liste des tickets en attente
+        fetch('/company/{{ $company->id }}/waiting-tickets')
+            .then(response => response.json())
+            .then(data => {
+                const queueElement = document.getElementById('waitingQueue');
+                if (queueElement && data.tickets) {
+                    // Mettre à jour le compteur
+                    const countElement = document.getElementById('waitingCount');
+                    if (countElement) {
+                        countElement.textContent = data.tickets.length;
+                    }
+                    
+                    // Mettre à jour la liste (si nécessaire)
+                    // Cette logique peut être étendue selon les besoins
+                }
+            })
+            .catch(error => console.error('Error updating queue:', error));
     }
 </script>
 @endsection

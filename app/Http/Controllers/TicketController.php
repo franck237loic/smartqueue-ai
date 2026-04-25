@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Events\TicketCalled;
 use App\Events\TicketServed;
 use App\Events\TicketStatusChanged;
+use App\Events\QueuePositionUpdated;
+use App\Events\TicketRecalled;
+use App\Events\TicketTimeout;
 use App\Models\Company;
 use App\Models\Service;
 use App\Models\Ticket;
@@ -130,10 +133,11 @@ class TicketController extends Controller
         }
 
         $services = $company->services()
-            ->where('status', 'active')
+            ->where('status', 'ACTIVE')
             ->with(['waitingTickets' => function ($query) {
                 $query->orderBy('created_at', 'asc')->limit(5);
-            }, 'calledTickets'])
+            }])
+            ->withCount(['waitingTickets'])
             ->get();
 
         $calledTickets = Ticket::where('tickets.company_id', $company->id)
@@ -206,7 +210,16 @@ class TicketController extends Controller
             $ticket = $this->ticketService->callNextTicket($company, $agent, $counter);
             
             if ($ticket) {
-                event(new TicketCalled($ticket, $counter, $agent));
+                // Déclencher l'event d'appel
+                event(new TicketCalled($ticket));
+                
+                // Mettre à jour les positions dans la queue
+                $this->updateQueuePositions($ticket);
+                
+                // Programmer le timeout de 2 minutes (120 secondes)
+                \App\Jobs\TicketTimeoutJob::dispatch($ticket)
+                    ->delay(now()->addSeconds(120));
+                
                 return back()->with('success', 'Ticket ' . $ticket->number . ' appelé.');
             }
             
@@ -323,15 +336,23 @@ class TicketController extends Controller
             abort(403);
         }
 
+        if ($ticket->status !== 'CALLED') {
+            return back()->with('error', 'Seuls les tickets appelés peuvent être rappelés.');
+        }
+
         try {
-            $this->ticketService->recallTicket($ticket, $agent);
-            
-            event(new TicketStatusChanged($ticket, 'present', 'called'));
+            // Incrémenter le compteur de rappels
+            $recallCount = $ticket->recall_count ?? 0;
+            $ticket->recall_count = $recallCount + 1;
+            $ticket->save();
+
+            // Déclencher l'event de rappel temps réel
+            event(new TicketRecalled($ticket, $ticket->recall_count));
             
             return back()->with('success', 'Ticket ' . $ticket->number . ' rappelé.');
             
         } catch (\Exception $e) {
-            return back()->with('error', 'Erreur lors du rappel du ticket: ' . $e->getMessage());
+            return back()->with('error', 'Erreur lors du rappel: ' . $e->getMessage());
         }
     }
 
@@ -383,5 +404,26 @@ class TicketController extends Controller
         $services = $company->services()->where('status', 'active')->get();
 
         return view('tickets.index', compact('company', 'tickets', 'services'));
+    }
+
+    /**
+     * Mettre à jour les positions dans la queue après un appel
+     */
+    private function updateQueuePositions(Ticket $calledTicket)
+    {
+        $waitingTickets = $calledTicket->service->tickets()
+            ->where('status', 'WAITING')
+            ->where('company_id', $calledTicket->company_id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        foreach ($waitingTickets as $index => $ticket) {
+            $oldPosition = $index + 2; // +2 car le ticket appelé était position 1
+            $newPosition = $index + 1;
+            
+            if ($oldPosition !== $newPosition) {
+                event(new QueuePositionUpdated($ticket, $oldPosition, $newPosition));
+            }
+        }
     }
 }

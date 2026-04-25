@@ -18,6 +18,7 @@ class Ticket extends Model
         'agent_id',
         'guest_name',
         'guest_phone',
+        'guest_email',
         'number',
         'sequence',
         'status',
@@ -31,6 +32,10 @@ class Ticket extends Model
         'priority',
         'notes',
         'cancellation_reason',
+        'client_response',
+        'client_response_at',
+        'client_response_code',
+        'missed_at',
     ];
 
     protected $casts = [
@@ -39,6 +44,7 @@ class Ticket extends Model
         'served_at' => 'datetime',
         'missed_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'client_response_at' => 'datetime',
         'actual_service_time' => 'integer',
         'missed_count' => 'integer',
         'sequence' => 'integer',
@@ -75,6 +81,7 @@ class Ticket extends Model
     const STATUS_PRESENT = 'PRESENT';
     const STATUS_SERVING = 'SERVING';
     const STATUS_SERVED = 'SERVED';
+    const STATUS_MISSED = 'MISSED';
     const STATUS_MISSED_TEMP = 'MISSED_TEMP';
     const STATUS_CANCELLED = 'CANCELLED';
     const STATUS_TRANSFERRED = 'TRANSFERRED';
@@ -103,7 +110,7 @@ class Ticket extends Model
 
     public function scopeMissed($query)
     {
-        return $query->whereIn('status', [self::STATUS_MISSED_TEMP]);
+        return $query->where('status', self::STATUS_MISSED);
     }
 
     public function scopeCancelled($query)
@@ -237,6 +244,72 @@ class Ticket extends Model
         // Le guichet reste dans son état actuel - séparation des états
     }
 
+    // ========== CLIENT RESPONSE METHODS ==========
+
+    public function respondAsComing(string $responseCode = null): void
+    {
+        $this->update([
+            'client_response' => 'COMING',
+            'client_response_at' => now(),
+            'client_response_code' => $responseCode ?: $this->generateResponseCode(),
+            'status' => self::STATUS_PRESENT, // Le client est considéré comme présent
+            'present_at' => now(),
+        ]);
+    }
+
+    public function respondAsDelayed(int $delayMinutes = 5): void
+    {
+        $this->update([
+            'client_response' => 'DELAYED',
+            'client_response_at' => now(),
+            'client_response_code' => $this->generateResponseCode(),
+            'notes' => ($this->notes ? $this->notes . "\n" : '') . "Client retardé de {$delayMinutes} minutes",
+        ]);
+    }
+
+    public function respondAsNotComing(): void
+    {
+        $this->update([
+            'client_response' => 'NOT_COMING',
+            'client_response_at' => now(),
+            'client_response_code' => $this->generateResponseCode(),
+            'status' => self::STATUS_CANCELLED,
+            'cancelled_at' => now(),
+            'cancellation_reason' => 'CLIENT_NOT_COMING',
+        ]);
+    }
+
+    public function respondAsNeedHelp(): void
+    {
+        $this->update([
+            'client_response' => 'NEED_HELP',
+            'client_response_at' => now(),
+            'client_response_code' => $this->generateResponseCode(),
+            'notes' => ($this->notes ? $this->notes . "\n" : '') . "Client a besoin d'aide",
+        ]);
+    }
+
+    private function generateResponseCode(): string
+    {
+        return 'RESP-' . strtoupper(uniqid()) . '-' . $this->id;
+    }
+
+    public function hasClientResponded(): bool
+    {
+        return !empty($this->client_response) && !empty($this->client_response_at);
+    }
+
+    public function getClientResponseStatus(): string
+    {
+        return match($this->client_response) {
+            'COMING' => 'En route',
+            'DELAYED' => 'Retardé',
+            'NOT_COMING' => 'Ne vient pas',
+            'NEED_HELP' => 'Besoin d\'aide',
+            default => 'Pas de réponse',
+        };
+    }
+
     public function markAsMissed(): bool
     {
         $newMissedCount = $this->missed_count + 1;
@@ -256,8 +329,9 @@ class Ticket extends Model
 
         // Remettre en file d'attente temporairement
         $this->update([
-            'status' => self::STATUS_MISSED_TEMP,
+            'status' => self::STATUS_MISSED,
             'missed_count' => $newMissedCount,
+            'missed_at' => now(),
             'counter_id' => null,
             'agent_id' => null,
         ]);
@@ -366,25 +440,4 @@ class Ticket extends Model
         return $this->served_at->diffInMinutes($this->called_at);
     }
 
-    /**
-     * Marquer un ticket comme servi
-     */
-    public function markAsServed(): void
-    {
-        $serviceTime = null;
-        if ($this->called_at) {
-            $serviceTime = now()->diffInSeconds($this->called_at);
-        }
-
-        $this->update([
-            'status' => self::STATUS_SERVED,
-            'served_at' => now(),
-            'actual_service_time' => $serviceTime,
-        ]);
     }
-
-    /**
-     * Marquer un ticket comme en cours de service
-     */
-    
-}

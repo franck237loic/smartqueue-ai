@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋 Architecture Analysis Report - Module Agent/Guichet/Horaires</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #3498db;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .warning {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .info {
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-existing {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .status-missing {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .status-to-improve {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .recommendation {
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .recommendation-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        
+        .challenge {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .challenge-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 5px;
+        }
+        
+        ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 ANALYSIS REPORT</h1>
+            <p>Module Agent/Guichet/Horaires - Architecture Existant & Recommendations</p>
+        </div>
+
+        <!-- 1. Ce qui existe déjà -->
+        <div class="section">
+            <div class="section-title">🔍 1. CE QUI EXISTE DÉJÀ</div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">Routes <span class="status-badge status-existing">EXISTANT</span></div>
+                    <ul>
+                        <li><span class="success">✅</span> Routes agent définies dans web.php</li>
+                        <li><span class="success">✅</span> Routes guichet: openCounter(), closeCounter()</li>
+                        <li><span class="success">✅</span> Routes dashboard agent</li>
+                        <li><span class="success">✅</span> Routes actions tickets</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Controllers <span class="status-badge status-existing">EXISTANT</span></div>
+                    <ul>
+                        <li><span class="success">✅</span> AgentController complet</li>
+                        <li><span class="success">✅</span> Méthodes openCounter() et closeCounter()</li>
+                        <li><span class="success">✅</span> Gestion des permissions d'accès</li>
+                        <li><span class="success">✅</span> Validation company_id</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Models <span class="status-badge status-existing">EXISTANT</span></div>
+                    <ul>
+                        <li><span class="success">✅</span> Counter model avec relations</li>
+                        <li><span class="success">✅</span> Méthodes isOpen(), open(), close()</li>
+                        <li><span class="success">✅</span> Timestamps opened_at, closed_at</li>
+                        <li><span class="success">✅</span> Soft deletes</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Database <span class="status-badge status-existing">EXISTANT</span></div>
+                    <ul>
+                        <li><span class="success">✅</span> Table counters avec status enum</li>
+                        <li><span class="success">✅</span> Status: ['open', 'closed', 'busy']</li>
+                        <li><span class="success">✅</span> is_active boolean</li>
+                        <li><span class="success">✅</span> Relations company_id, service_id, user_id</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Events <span class="status-badge status-existing">EXISTANT</span></div>
+                    <ul>
+                        <li><span class="success">✅</span> TicketCalled (WebSocket)</li>
+                        <li><span class="success">✅</span> TicketServed (WebSocket)</li>
+                        <li><span class="success">✅</span> TicketStatusChanged (WebSocket)</li>
+                        <li><span class="success">✅</span> Broadcasting sur channels company/service</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Scheduler <span class="status-badge status-existing">EXISTANT</span></div>
+                    <ul>
+                        <li><span class="success">✅</span> Laravel Scheduler configuré</li>
+                        <li><span class="success">✅</span> Commands existantes</li>
+                        <li><span class="success">✅</span> everyTwoMinutes, everyFiveMinutes</li>
+                        <li><span class="success">✅</span> withoutOverlapping()</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Ce qui doit être amélioré -->
+        <div class="section">
+            <div class="section-title">🔧 2. CE QUI DOIT ÊTRE AMÉLIORÉ</div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">Logique Guichet <span class="status-badge status-to-improve">À AMÉLIORER</span></div>
+                    <ul>
+                        <li><span class="warning">⚠️</span> Status limité à 3 états (open/closed/busy)</li>
+                        <li><span class="warning">⚠️</span> Manque: PAUSED, AUTO_CLOSED, OFFLINE</li>
+                        <li><span class="warning">⚠️</span> Pas de logique de pause/reprise</li>
+                        <li><span class="warning">⚠️</span> Pas d'automatisation horaire</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Notifications <span class="status-badge status-to-improve">À AMÉLIORER</span></div>
+                    <ul>
+                        <li><span class="warning">⚠️</span> Pas d'events CounterOpened/CounterClosed</li>
+                        <li><span class="warning">⚠️</span> Pas de notification temps réel admin</li>
+                        <li><span class="warning">⚠️</span> Pas de notification super admin</li>
+                        <li><span class="warning">⚠️</span> Client pas notifié des changements guichet</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Controller <span class="status-badge status-to-improve">À AMÉLIORER</span></div>
+                    <ul>
+                        <li><span class="warning">⚠️</span> openCounter() trop simple</li>
+                        <li><span class="warning">⚠️</span> Pas d'events WebSocket</li>
+                        <li><span class="warning">⚠️</span> Pas de validation logique métier</li>
+                        <li><span class="warning">⚠️</span> Pas de méthode pauseCounter()</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Ce qui manque -->
+        <div class="section">
+            <div class="section-title">❌ 3. CE QUI MANQUE</div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">Work Schedules <span class="status-badge status-missing">MANQUANT</span></div>
+                    <ul>
+                        <li><span class="error">❌</span> Table work_schedules</li>
+                        <li><span class="error">❌</span> Horaires configurables par admin</li>
+                        <li><span class="error">❌</span> Matin/Après-midi séparés</li>
+                        <li><span class="error">❌</span> Jours de travail configurables</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Events Guichet <span class="status-badge status-missing">MANQUANT</span></div>
+                    <ul>
+                        <li><span class="error">❌</span> CounterOpened event</li>
+                        <li><span class="error">❌</span> CounterClosed event</li>
+                        <li><span class="error">❌</span> CounterPaused event</li>
+                        <li><span class="error">❌</span> CounterAutoManaged event</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Scheduler Command <span class="status-badge status-missing">MANQUANT</span></div>
+                    <ul>
+                        <li><span class="error">❌</span> AutoManageCounters command</li>
+                        <li><span class="error">❌</span> everyMinute() execution</li>
+                        <li><span class="error">❌</span> Logique d'auto ouverture/fermeture</li>
+                        <li><span class="error">❌</span> Notifications automatiques</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Challenges Logique Métier -->
+        <div class="section">
+            <div class="section-title">🧠 4. CHALLENGES LOGIQUE MÉTIER</div>
+            
+            <div class="challenge">
+                <div class="challenge-title">🎯 QUESTION 1: Que devient la file à 12h ?</div>
+                <div><strong>Réponse technique:</strong> Les tickets doivent être conservés en base avec status 'WAITING'. À 14h, reprise automatique du premier ticket en attente.</div>
+            </div>
+            
+            <div class="challenge">
+                <div class="challenge-title">🎯 QUESTION 2: Ticket en cours à 11:59 ?</div>
+                <div><strong>Réponse technique:</strong> Ne jamais fermer brutalement. Le guichet reste ouvert jusqu'à la fin du ticket actuel. Fermeture douce après completion.</div>
+            </div>
+            
+            <div class="challenge">
+                <div class="challenge-title">🎯 QUESTION 3: Client en attente pendant pause ?</div>
+                <div><strong>Réponse technique:</strong> Notification WebSocket: "Service temporairement suspendu - Reprise à 14h". Affichage sur écran d'attente.</div>
+            </div>
+            
+            <div class="challenge">
+                <div class="challenge-title">🎯 QUESTION 4: Agent oublie d'ouvrir ?</div>
+                <div><strong>Réponse technique:</strong> Si horaire actif et guichet fermé: ouverture automatique via scheduler. Notification agent/admin.</div>
+            </div>
+        </div>
+
+        <!-- 5. Plan d'Action -->
+        <div class="section">
+            <div class="section-title">🚀 5. PLAN D'ACTION</div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">ÉTAPE 1: Améliorer Model Counter</div>
+                <ul>
+                    <li>Ajouter status enum: ['closed', 'open', 'paused', 'auto_closed', 'offline']</li>
+                    <li>Ajouter méthodes: pause(), resume(), autoClose(), setOffline()</li>
+                    <li>Garder compatibilité avec méthodes existantes</li>
+                </ul>
+            </div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">ÉTAPE 2: Créer Table Work Schedules</div>
+                <ul>
+                    <li>Migration work_schedules avec structure complète</li>
+                    <li>Model WorkSchedule avec relations</li>
+                    <li>Validation horaires et jours de travail</li>
+                </ul>
+            </div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">ÉTAPE 3: Créer Events WebSocket</div>
+                <ul>
+                    <li>CounterOpened, CounterClosed, CounterPaused</li>
+                    <li>CounterAutoManaged pour scheduler</li>
+                    <li>Broadcasting sur channels: company, admin, super-admin</li>
+                </ul>
+            </div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">ÉTAPE 4: Améliorer AgentController</div>
+                <ul>
+                    <li>Améliorer openCounter() avec events</li>
+                    <li>Ajouter pauseCounter(), resumeCounter()</li>
+                    <li>Améliorer closeCounter() avec logique douce</li>
+                </ul>
+            </div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">ÉTAPE 5: Créer Scheduler AutoManageCounters</div>
+                <ul>
+                    <li>Command AutoManageCounters everyMinute()</li>
+                    <li>Logique d'auto ouverture/fermeture</li>
+                    <li>Gestion des tickets en cours</li>
+                    <li>Notifications temps réel</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 6. Risques & Mitigations -->
+        <div class="section">
+            <div class="section-title">⚠️ 6. RISQUES DÉTECTÉS & MITIGATIONS</div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">Risque: Régression</div>
+                    <ul>
+                        <li><span class="warning">⚠️</span> Modification status enum</li>
+                        <li><span class="success">✅</span> Migration avec backward compatibility</li>
+                        <li><span class="success">✅</span> Tests unitaires sur méthodes existantes</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Risque: Conflits WebSocket</div>
+                    <ul>
+                        <li><span class="warning">⚠️</span> Nouveaux events</li>
+                        <li><span class="success">✅</span> Channels séparés</li>
+                        <li><span class="success">✅</span> Tests broadcasting</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Risque: Performance Scheduler</div>
+                    <ul>
+                        <li><span class="warning">⚠️</span> everyMinute() charge</li>
+                        <li><span class="success">✅</span> Optimisation requêtes</li>
+                        <li><span class="success">✅</span> withoutOverlapping()</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. Code Examples -->
+        <div class="section">
+            <div class="section-title">💻 7. CODE EXAMPLES</div>
+            
+            <div class="code-block">
+// Migration Counter Status Enhancement
+public function up(): void
+{
+    Schema::table('counters', function (Blueprint $table) {
+        $table->dropColumn('status');
+    });
+    
+    Schema::table('counters', function (Blueprint $table) {
+        $table->enum('status', ['closed', 'open', 'paused', 'auto_closed', 'offline'])
+              ->default('closed')
+              ->after('location');
+    });
+}
+
+// Enhanced Counter Model
+public function pause(): void
+{
+    $this->update([
+        'status' => 'paused',
+        'paused_at' => now(),
+    ]);
+    
+    event(new CounterPaused($this));
+}
+
+// AutoManageCounters Command
+public function handle(): int
+{
+    $now = now();
+    $schedules = WorkSchedule::where('is_active', true)
+        ->whereRaw('JSON_CONTAINS(working_days, ?)', [json_encode($now->dayOfWeek)])
+        ->get();
+    
+    foreach ($schedules as $schedule) {
+        $this->manageCounterSchedule($schedule, $now);
+    }
+    
+    return 0;
+}
+            </div>
+        </div>
+
+        <!-- 8. Recommendations Architecture -->
+        <div class="section">
+            <div class="section-title">🏗️ 8. RECOMMANDATIONS ARCHITECTURE</div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">🎯 Recommandation 1: Approche Graduelle</div>
+                <div>Implémenter par étapes pour éviter les régressions. Commencer par les améliorations non-breaking.</div>
+            </div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">🎯 Recommandation 2: Events-First</div>
+                <div>Utiliser les events pour toute logique métier. Éviter le code couplé.</div>
+            </div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">🎯 Recommandation 3: Testing</div>
+                <div>Tests unitaires pour chaque nouvelle méthode. Tests d'intégration pour les workflows complets.</div>
+            </div>
+            
+            <div class="recommendation">
+                <div class="recommendation-title">🎯 Recommandation 4: Monitoring</div>
+                <div>Ajouter des logs pour toutes les actions automatiques. Monitoring des performances scheduler.</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

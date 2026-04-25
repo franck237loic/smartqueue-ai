@@ -35,4 +35,23 @@ return [
         ],
     ],
 
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'token' => env('TWILIO_AUTH_TOKEN'),
+        'from' => env('TWILIO_PHONE_NUMBER'),
+        'enabled' => env('TWILIO_ENABLED', false),
+    ],
+
+    'pusher' => [
+        'app_id' => env('PUSHER_APP_ID'),
+        'key' => env('PUSHER_APP_KEY'),
+        'secret' => env('PUSHER_APP_SECRET'),
+        'cluster' => env('PUSHER_APP_CLUSTER', 'mt1'),
+        'host' => env('PUSHER_HOST'),
+        'port' => env('PUSHER_PORT', '443'),
+        'scheme' => env('PUSHER_SCHEME', 'https'),
+        'encrypted' => true,
+        'use_tls' => true,
+    ],
+
 ];

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Rapport d'Audit Lighthouse - SmartQueue AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .scores-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .score-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .score-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .score-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .score-excellent { color: #28a745; }
+        .score-good { color: #17a2b8; }
+        .score-needs-improvement { color: #ffc107; }
+        .score-poor { color: #dc3545; }
+        
+        .score-label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .score-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .issues-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .issue-card {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .issue-card:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .issue-card.high-priority {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .issue-card.medium-priority {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+        
+        .issue-card.low-priority {
+            border-left-color: #28a745;
+            background: #f0fff4;
+        }
+        
+        .issue-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .issue-description {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .issue-impact {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .impact-title {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .impact-value {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .recommendation {
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .recommendation-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        
+        .recommendation-text {
+            color: #495057;
+            line-height: 1.5;
+        }
+        
+        .file-reference {
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .action-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: #333;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .metric-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 RAPPORT D'AUDIT LIGHTHOUSE</h1>
+            <h2>SmartQueue AI - Analyse Performance & Accessibilité</h2>
+        </div>
+
+        <!-- Scores Lighthouse -->
+        <div class="scores-summary">
+            <div class="score-card">
+                <div class="score-value score-good">90</div>
+                <div class="score-label">Performance</div>
+                <div class="score-description">Bon niveau mais améliorable</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 90%"></div>
+                </div>
+            </div>
+            
+            <div class="score-card">
+                <div class="score-value score-needs-improvement">71</div>
+                <div class="score-label">Accessibilité</div>
+                <div class="score-description">Nécessite des améliorations</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 71%; background: linear-gradient(90deg, #ffc107, #e0a800);"></div>
+                </div>
+            </div>
+            
+            <div class="score-card">
+                <div class="score-value score-excellent">91</div>
+                <div class="score-label">SEO</div>
+                <div class="score-description">Très bon niveau</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 91%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Problèmes Détectés -->
+        <div class="issues-section">
+            <h2 class="section-title">🚨 PROBLÈMES DÉTECTÉS</h2>
+            
+            <!-- SEO Issues -->
+            <div class="issue-card medium-priority">
+                <div class="issue-title">🔍 SEO - Meta Description Manquante</div>
+                <div class="issue-description">
+                    <strong>Problème :</strong> La balise meta description est manquante dans le layout principal.
+                    <br><br>
+                    <strong>Impact :</strong> Le score SEO est pénalisé de 9 points.
+                    <br><br>
+                    <strong>Fichiers concernés :</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>resources/views/layouts/app.blade.php (ligne 27)</li>
+                        <li>resources/views/layouts/modern-sidebar.blade.php (ligne 7)</li>
+                        <li>resources/views/pages/home.blade.php (ligne 6)</li>
+                    </ul>
+                </div>
+                <div class="recommendation">
+                    <div class="recommendation-title">💡 Recommandation</div>
+                    <div class="recommendation-text">
+                        Ajouter une balise meta description pertinente (150-160 caractères) pour améliorer le référencement et l'affichage dans les résultats de recherche.
+                    </div>
+                </div>
+                <div class="file-reference">
+                    Fichiers à modifier : app.blade.php, modern-sidebar.blade.php, home.blade.php
+                </div>
+            </div>
+
+            <!-- Accessibilité Issues -->
+            <div class="issue-card high-priority">
+                <div class="issue-title">♿ Accessibilité - ARIA Labels Manquants</div>
+                <div class="issue-description">
+                    <strong>Problème :</strong> Plusieurs boutons et liens n'ont pas de texte visible ou d'attributs aria-label.
+                    <br><br>
+                    <strong>Impact :</strong> Le score d'accessibilité est réduit à 71/100.
+                    <br><br>
+                    <strong>Éléments concernés :</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Boutons sans aria-label dans les dashboards</li>
+                        <li>Liens icônes sans texte alternatif</li>
+                        <li>Boutons de navigation dans sidebar</li>
+                    </ul>
+                </div>
+                <div class="recommendation">
+                    <div class="recommendation-title">💡 Recommandation</div>
+                    <div class="recommendation-text">
+                        Ajouter des attributs aria-label descriptifs sur tous les éléments interactifs sans texte visible.
+                    </div>
+                </div>
+                <div class="file-reference">
+                    Fichiers à vérifier : Tous les dashboards et layouts
+                </div>
+            </div>
+
+            <div class="issue-card high-priority">
+                <div class="issue-title">♿ Accessibilité - Hiérarchie des Titres</div>
+                <div class="issue-description">
+                    <strong>Problème :</strong> La hiérarchie des titres (H1, H2, H3...) n'est pas toujours séquentielle.
+                    <br><br>
+                    <strong>Impact :</strong> Pénalisation importante sur l'accessibilité et le SEO.
+                </div>
+                <div class="recommendation">
+                    <div class="recommendation-title">💡 Recommandation</div>
+                    <div class="recommendation-text">
+                        Restructurer la hiérarchie des titres pour qu'elle soit logique et séquentielle (H1 → H2 → H3).
+                    </div>
+                </div>
+            </div>
+
+            <div class="issue-card high-priority">
+                <div class="issue-title">♿ Accessibilité - Contrastes de Couleurs</div>
+                <div class="issue-description">
+                    <strong>Problème :</strong> Certains textes ont des contrastes insuffisants selon WCAG 2.1.
+                    <br><br>
+                    <strong>Impact :</strong> Difficulté de lecture pour les utilisateurs malvoyants.
+                    <br><br>
+                    <strong>Éléments concernés :</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Texte sur fond clair : #6b7280 sur #f3f4f6</li>
+                        <li>Liens dans sidebar : rgba(255,255,255,0.7) sur fond sombre</li>
+                        <li>Boutons secondaires</li>
+                    </ul>
+                </div>
+                <div class="recommendation">
+                    <div class="recommendation-title">💡 Recommandation</div>
+                    <div class="recommendation-text">
+                        Augmenter les contrastes en utilisant des couleurs plus foncées pour le texte sur fond clair.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Issues -->
+            <div class="issue-card high-priority">
+                <div class="issue-title">⚡ Performance - Google Fonts Bloquant</div>
+                <div class="issue-description">
+                    <strong>Problème :</strong> L'appel aux Google Fonts bloque le rendu avec un délai de 640ms.
+                    <br><br>
+                    <strong>Impact :</strong> Le TTFB (Time To First Byte) est de 749ms, pénalisant le score de performance.
+                    <br><br>
+                    <strong>Fichiers concernés :</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>app.blade.php (lignes 28-30)</li>
+                        <li>modern-sidebar.blade.php (lignes 10-12)</li>
+                        <li>home.blade.php (lignes 9-11)</li>
+                    </ul>
+                </div>
+                <div class="recommendation">
+                    <div class="recommendation-title">💡 Recommandation</div>
+                    <div class="recommendation-text">
+                        <strong>Option 1 :</strong> Ajouter &display=swap aux URLs Google Fonts<br>
+                        <strong>Option 2 :</strong> Héberger les fonts localement pour éliminer le délai réseau
+                    </div>
+                </div>
+            </div>
+
+            <div class="issue-card high-priority">
+                <div class="issue-title">⚡ Performance - Requêtes SQL Lentes</div>
+                <div class="issue-description">
+                    <strong>Problème :</strong> Le temps de réponse serveur est de 749ms (TTFB).
+                    <br><br>
+                    <strong>Impact :</strong> Expérience utilisateur dégradée, score performance réduit.
+                    <br><br>
+                    <strong>Causes probables :</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Requêtes N+1 non optimisées</li>
+                        <li>Manque de caching stratégique</li>
+                        <li>Requêtes SQL complexes sans indexes</li>
+                    </ul>
+                </div>
+                <div class="recommendation">
+                    <div class="recommendation-title">💡 Recommandation</div>
+                    <div class="recommendation-text">
+                        Analyser les contrôleurs principaux pour identifier les requêtes lentes et optimiser avec eager loading.
+                    </div>
+                </div>
+                <div class="file-reference">
+                    Fichiers à analyser : Controllers principaux, Services, Models
+                </div>
+            </div>
+        </div>
+
+        <!-- Métriques Techniques -->
+        <div class="issues-section">
+            <h2 class="section-title">📊 MÉTRIQUES TECHNIQUES</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Time to First Byte (TTFB)</div>
+                    <div class="metric-value">749ms</div>
+                    <div style="color: #dc3545; font-size: 0.9rem;">⚠️ Au-dessus de 600ms</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Google Fonts Loading</div>
+                    <div class="metric-value">640ms</div>
+                    <div style="color: #dc3545; font-size: 0.9rem;">⚠️ Bloque le rendu</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Contraste Minimum Détecté</div>
+                    <div class="metric-value">3.1:1</div>
+                    <div style="color: #ffc107; font-size: 0.9rem;">⚠️ En dessous de 4.5:1 (WCAG AA)</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Score d'Accessibilité</div>
+                    <div class="metric-value">71/100</div>
+                    <div style="color: #ffc107; font-size: 0.9rem;">⚠️ Nécessite amélioration</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Recommandées -->
+        <div class="action-buttons">
+            <button class="action-btn btn-success" onclick="applySEOFixes()">
+                🔍 Appliquer Corrections SEO
+            </button>
+            <button class="action-btn btn-primary" onclick="applyAccessibilityFixes()">
+                ♿ Appliquer Corrections Accessibilité
+            </button>
+            <button class="action-btn btn-warning" onclick="applyPerformanceFixes()">
+                ⚡ Appliquer Optimisations Performance
+            </button>
+            <button class="action-btn btn-primary" onclick="generateFullReport()">
+                📋 Générer Rapport Complet
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function applySEOFixes() {
+            alert('🔍 Corrections SEO prêtes à être appliquées :\n\n' +
+                  '✅ Ajouter meta description (150-160 caractères)\n' +
+                  '✅ Optimiser les titres de pages\n' +
+                  '✅ Ajouter meta keywords pertinents\n\n' +
+                  'Voulez-vous continuer avec l\'application ?');
+        }
+        
+        function applyAccessibilityFixes() {
+            alert('♿ Corrections Accessibilité prêtes :\n\n' +
+                  '✅ Ajouter aria-label sur tous les boutons\n' +
+                  '✅ Corriger la hiérarchie H1→H2→H3\n' +
+                  '✅ Améliorer les contrastes de couleurs\n' +
+                  '✅ Ajouter roles ARIA appropriés\n\n' +
+                  'Voulez-vous continuer avec l\'application ?');
+        }
+        
+        function applyPerformanceFixes() {
+            alert('⚡ Optimisations Performance prêtes :\n\n' +
+                  '✅ Ajouter display=swap aux Google Fonts\n' +
+                  '✅ Optimiser les requêtes SQL avec eager loading\n' +
+                  '✅ Implémenter le caching stratégique\n' +
+                  '✅ Compresser les assets\n\n' +
+                  'Voulez-vous continuer avec l\'application ?');
+        }
+        
+        function generateFullReport() {
+            window.print();
+        }
+        
+        // Animation des scores au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            const scoreCards = document.querySelectorAll('.score-card');
+            scoreCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        card.style.transform = 'scale(1)';
+                    }, 200);
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
