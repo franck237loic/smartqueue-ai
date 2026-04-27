@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin') | {{ $company->name }}</title>
-    @vite(['resources/css/app.css'])
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title><?php echo $__env->yieldContent('title', 'Admin'); ?> | <?php echo e($company->name); ?></title>
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css']); ?>
     <style>
         body { font-family: 'Inter', sans-serif; }
         
@@ -141,10 +141,10 @@
             <div class="p-6 border-b border-dark-700">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-brand-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-brand-600/30">
-                        <span class="text-white font-bold">{{ substr($company->name, 0, 1) }}</span>
+                        <span class="text-white font-bold"><?php echo e(substr($company->name, 0, 1)); ?></span>
                     </div>
                     <div>
-                        <h1 class="font-bold text-white text-sm truncate">{{ $company->name }}</h1>
+                        <h1 class="font-bold text-white text-sm truncate"><?php echo e($company->name); ?></h1>
                         <p class="text-xs text-gray-500">Admin</p>
                     </div>
                 </div>
@@ -152,7 +152,7 @@
 
             <!-- Navigation -->
             <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                <a href="{{ route('company.admin.dashboard', $company) }}" class="sidebar-link {{ request()->routeIs('company.admin.dashboard') ? 'active' : 'text-gray-400' }}">
+                <a href="<?php echo e(route('company.admin.dashboard', $company)); ?>" class="sidebar-link <?php echo e(request()->routeIs('company.admin.dashboard') ? 'active' : 'text-gray-400'); ?>">
                     <span class="icon-wrapper">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
@@ -161,7 +161,7 @@
                     <span class="link-text">Dashboard</span>
                 </a>
 
-                <a href="{{ route('company.admin.services', $company) }}" class="sidebar-link {{ request()->routeIs('company.admin.services*') ? 'active' : 'text-gray-400' }}">
+                <a href="<?php echo e(route('company.admin.services', $company)); ?>" class="sidebar-link <?php echo e(request()->routeIs('company.admin.services*') ? 'active' : 'text-gray-400'); ?>">
                     <span class="icon-wrapper">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
@@ -170,7 +170,7 @@
                     <span class="link-text">Services</span>
                 </a>
 
-                <a href="{{ route('company.admin.counters', $company) }}" class="sidebar-link {{ request()->routeIs('company.admin.counters*') ? 'active' : 'text-gray-400' }}">
+                <a href="<?php echo e(route('company.admin.counters', $company)); ?>" class="sidebar-link <?php echo e(request()->routeIs('company.admin.counters*') ? 'active' : 'text-gray-400'); ?>">
                     <span class="icon-wrapper">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -179,7 +179,7 @@
                     <span class="link-text">Guichets</span>
                 </a>
 
-                <a href="{{ route('company.admin.agents', $company) }}" class="sidebar-link {{ request()->routeIs('company.admin.agents*') ? 'active' : 'text-gray-400' }}">
+                <a href="<?php echo e(route('company.admin.agents', $company)); ?>" class="sidebar-link <?php echo e(request()->routeIs('company.admin.agents*') ? 'active' : 'text-gray-400'); ?>">
                     <span class="icon-wrapper">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
@@ -189,7 +189,7 @@
                 </a>
 
                 <div class="p-6 border-t border-gray-700">
-                    <a href="{{ route('welcome') }}" class="sidebar-link text-gray-400">
+                    <a href="<?php echo e(route('welcome')); ?>" class="sidebar-link text-gray-400">
                         <span class="icon-wrapper">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
@@ -198,8 +198,8 @@
                         <span class="link-text">Accueil</span>
                     </a>
 
-                    <form action="{{ route('logout') }}" method="POST" class="block">
-                        @csrf
+                    <form action="<?php echo e(route('logout')); ?>" method="POST" class="block">
+                        <?php echo csrf_field(); ?>
                         <button type="submit" class="sidebar-link text-red-400 w-full text-left">
                             <span class="icon-wrapper">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,11 +216,12 @@
             <div class="p-4 border-t border-gray-700/50">
                 <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-800/50 border border-gray-700/30">
                     <div class="w-10 h-10 bg-gradient-to-br from-brand-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold avatar-glow">
-                        {{ substr(auth()->user()->name, 0, 1) }}
+                        <?php echo e(substr(auth()->user()->name, 0, 1)); ?>
+
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                        <p class="text-sm font-medium text-white truncate"><?php echo e(auth()->user()->name); ?></p>
+                        <p class="text-xs text-gray-500 truncate"><?php echo e(auth()->user()->email); ?></p>
                     </div>
                 </div>
             </div>
@@ -232,8 +233,8 @@
             <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-10">
                 <div class="flex items-center justify-between px-8 py-4">
                     <div>
-                        <h2 class="text-xl font-semibold text-white">@yield('title', 'Dashboard')</h2>
-                        <p class="text-sm text-gray-500">{{ now()->format('l d F Y') }}</p>
+                        <h2 class="text-xl font-semibold text-white"><?php echo $__env->yieldContent('title', 'Dashboard'); ?></h2>
+                        <p class="text-sm text-gray-500"><?php echo e(now()->format('l d F Y')); ?></p>
                     </div>
                     <div class="flex items-center gap-4">
                         <span class="px-4 py-1.5 bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-400 rounded-full text-sm font-semibold border border-blue-500/30 shadow-lg shadow-blue-500/20">
@@ -248,27 +249,28 @@
 
             <!-- Content -->
             <div class="p-8">
-                @if(session('success'))
+                <?php if(session('success')): ?>
                     <div class="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl flex items-center gap-3">
                         <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <p class="text-green-400">{{ session('success') }}</p>
+                        <p class="text-green-400"><?php echo e(session('success')); ?></p>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                @if(session('error'))
+                <?php if(session('error')): ?>
                     <div class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3">
                         <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <p class="text-red-400">{{ session('error') }}</p>
+                        <p class="text-red-400"><?php echo e(session('error')); ?></p>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                @yield('content')
+                <?php echo $__env->yieldContent('content'); ?>
             </div>
         </main>
     </div>
 </body>
 </html>
+<?php /**PATH C:\Users\FurtherMarket\smartqueue-ai\resources\views/layouts/company-admin.blade.php ENDPATH**/ ?>

@@ -76,6 +76,7 @@
                             </label>
                             <select id="timezone" name="timezone" required 
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="Africa/Douala" selected>Africa/Douala (Cameroun)</option>
                                 <option value="Europe/Paris">Europe/Paris</option>
                                 <option value="Europe/London">Europe/London</option>
                                 <option value="Europe/Berlin">Europe/Berlin</option>
@@ -178,7 +179,7 @@
 
 <script>
 // Données des guichets par service
-const countersByService = @json($services->map(function($service) {
+const countersByService = {!! $services->map(function($service) {
     return [
         'id' => $service->id,
         'counters' => $service->counters->map(function($counter) {
@@ -189,15 +190,15 @@ const countersByService = @json($services->map(function($service) {
             ];
         })
     ];
-}));
+})->toJson() !!};
 
 // Données des agents
-const agents = @json($agents->map(function($agent) {
+const agents = {!! $agents->map(function($agent) {
     return [
         'id' => $agent->id,
         'name' => $agent->name
     ];
-}));
+})->toJson() !!};
 
 // Mise à jour des guichets quand le service change
 document.getElementById('service_id').addEventListener('change', function() {

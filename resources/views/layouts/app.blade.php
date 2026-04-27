@@ -22,7 +22,7 @@
         };
     </script>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SmartQueue AI')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -96,10 +96,66 @@
         .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
         .card-hover:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04); transform: translateY(-1px); }
         .animate-fade-in { animation: fadeIn 0.5s ease-out; }
-        .animate-slide-up { animation: slideUp 0.5s ease-out; }
+        .animate-slide-up { animation: slideUp 0.3s ease-out; }
         .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        
+        /* Mobile-friendly animations */
+        @media (max-width: 768px) {
+            .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+            .animate-slide-up { animation: slideUp 0.2s ease-out; }
+            .animate-pulse-slow { animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+            
+            /* Reduce motion for better performance on mobile */
+            @media (prefers-reduced-motion: reduce) {
+                .animate-fade-in,
+                .animate-slide-up,
+                .animate-pulse-slow {
+                    animation: none;
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+        }
+        
+        /* Touch-friendly hover effects */
+        @media (hover: none) and (pointer: coarse) {
+            .hover\:scale-105:hover { transform: none; }
+            .hover\:shadow-xl:hover { box-shadow: none; }
+            .hover\:bg-gray-50:hover { background-color: transparent; }
+        }
+        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Mobile-specific animations */
+        @keyframes slideInMobile {
+            from { 
+                opacity: 0; 
+                transform: translateX(-20px); 
+            } 
+            to { 
+                opacity: 1; 
+                transform: translateX(0); 
+            } 
+        }
+        
+        @keyframes bounceMobile {
+            0%, 20%, 53%, 80%, 100% { 
+                transform: translate3d(0,0,0); 
+            } 
+            40%, 43% { 
+                transform: translate3d(0, -8px, 0); 
+            } 
+            70% { 
+                transform: translate3d(0, -4px, 0); 
+            } 
+            90% { 
+                transform: translate3d(0, -2px, 0); 
+            } 
+        }
+        
+        .mobile-animate { animation: slideInMobile 0.3s ease-out; }
+        .mobile-bounce { animation: bounceMobile 0.6s ease-out; }
     </style>
     @stack('styles')
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

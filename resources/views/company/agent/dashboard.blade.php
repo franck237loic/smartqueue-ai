@@ -2,7 +2,10 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Dashboard Agent - {{ $company->name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,37 +18,48 @@
     @endif
     
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --transition-fast: 0.3s ease-out;
+            --transition-medium: 0.5s;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
         @keyframes slideIn {
             from { transform: translateY(-10px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+        
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
+        
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
             75% { transform: translateX(5px); }
         }
-        .card-animate { animation: slideIn 0.3s ease-out; }
+
+        .card-animate { animation: slideIn var(--transition-fast); }
         .pulse-animation { animation: pulse 2s infinite; }
-        .shake-animation { animation: shake 0.5s; }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
+        .shake-animation { animation: shake var(--transition-medium); }
+        .gradient-bg { background: var(--primary-gradient); }
         .glass-effect {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        
         .mobile-menu {
             transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out;
+            transition: transform var(--transition-fast);
         }
+        
         .mobile-menu.open {
             transform: translateX(0);
         }
+        
         .overlay {
             opacity: 0;
             pointer-events: none;
@@ -101,10 +115,17 @@
     </div>
 
     <!-- Header -->
-    <header class="gradient-bg text-white shadow-lg">
+    <header class="gradient-bg text-white shadow-lg relative">
         <div class="container mx-auto px-4 py-4 md:py-6">
             <div class="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
                 <div class="flex items-center space-x-3 md:space-x-4">
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-white/20 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                    
                     <div class="bg-white/20 p-2 md:p-3 rounded-lg">
                         <i class="fas fa-users-cog text-lg md:text-2xl"></i>
                     </div>
@@ -130,6 +151,68 @@
         </div>
     </header>
 
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="closeMobileMenu()"></div>
+    
+    <!-- Mobile Menu Sidebar -->
+    <div id="mobile-menu-sidebar" class="fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-50 transform -translate-x-full transition-transform duration-300 md:hidden">
+        <div class="p-4">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-semibold text-gray-800">Menu</h2>
+                <button onclick="closeMobileMenu()" class="p-2 rounded-lg hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="{{ route('company.agent.dashboard', $company) }}" class="flex items-center gap-3 p-3 rounded-lg bg-blue-50 text-blue-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="{{ route('company.agent.history', $company) }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Historique</span>
+                </a>
+                
+                <a href="{{ route('company.agent.all-services', $company) }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                    <span>Tous Services</span>
+                </a>
+                
+                <div class="border-t pt-2 mt-2">
+                    <div class="flex items-center gap-3 p-3">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-gray-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">{{ auth()->user()->name }}</p>
+                            <p class="text-xs text-gray-500">Agent</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="POST" action="{{ route('logout.post') }}" class="pt-2">
+                    @csrf
+                    <button type="submit" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 text-red-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        <span>Déconnexion</span>
+                    </button>
+                </form>
+            </nav>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-4 md:py-8">
         <!-- Performance Stats -->
@@ -144,7 +227,7 @@
                 </button>
             </div>
             
-            <div id="performanceStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div id="performanceStats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 <!-- Stats will be loaded here -->
                 <div class="text-center">
                     <div class="text-2xl md:text-3xl font-bold text-green-600">-</div>
@@ -220,8 +303,29 @@
             </div>
         </div>
 
+        <!-- Work Schedule Status Section -->
+        <div class="bg-white rounded-xl shadow-lg p-4 md:p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg md:text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-clock mr-2 text-green-600"></i>
+                    Statut des Guichets
+                </h2>
+                <button onclick="refreshScheduleStatus()" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg transition-colors">
+                    <i class="fas fa-sync-alt text-gray-600"></i>
+                </button>
+            </div>
+            
+            <div id="scheduleStatus" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Schedule status will be loaded here -->
+                <div class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i>
+                    <p class="text-gray-500 mt-2">Chargement du statut...</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Services Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 mb-6">
             <div class="bg-white rounded-xl shadow-lg p-4 md:p-6">
                 <div class="flex items-center justify-between mb-4 md:mb-6">
                     <h2 class="text-lg md:text-xl font-bold text-gray-800 flex items-center">
@@ -271,7 +375,7 @@
 
             <!-- Current Ticket Section -->
             <div class="bg-white rounded-xl shadow-lg p-4 md:p-6">
-                <div class="flex items-center justify-between mb-4 md:mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 md:mb-6 gap-3">
                     <h2 class="text-lg md:text-xl font-bold text-gray-800 flex items-center">
                         <i class="fas fa-ticket-alt mr-2 text-green-600"></i>
                         Ticket en Cours
@@ -488,24 +592,34 @@
             }
         }
 
-        // Mobile menu handlers
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const mobileOverlay = document.getElementById('mobileOverlay');
-        const closeMobileMenuBtn = document.getElementById('closeMobileMenu');
-
+        // Close mobile menu
         function closeMobileMenu() {
-            mobileMenu.classList.remove('open');
-            mobileOverlay.classList.remove('show');
+            document.getElementById('mobile-menu-sidebar').classList.remove('translate-x-0');
+            document.getElementById('mobile-menu-sidebar').classList.add('-translate-x-full');
+            document.getElementById('mobile-menu-overlay').classList.add('hidden');
         }
 
-        mobileMenuBtn?.addEventListener('click', () => {
-            mobileMenu.classList.add('open');
-            mobileOverlay.classList.add('show');
-        });
+        // Open mobile menu
+        function openMobileMenu() {
+            document.getElementById('mobile-menu-sidebar').classList.remove('-translate-x-full');
+            document.getElementById('mobile-menu-sidebar').classList.add('translate-x-0');
+            document.getElementById('mobile-menu-overlay').classList.remove('hidden');
+        }
 
-        closeMobileMenuBtn?.addEventListener('click', closeMobileMenu);
-        mobileOverlay?.addEventListener('click', closeMobileMenu);
+        // Mobile menu handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenuSidebar = document.getElementById('mobile-menu-sidebar');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', openMobileMenu);
+            }
+
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+            }
+        });
 
         // Show toast notification
         function showToast(message, type = 'success') {
@@ -791,6 +905,80 @@
             }
         }
 
+        // Load and display schedule status
+        async function loadScheduleStatus() {
+            try {
+                const response = await fetch('/api/work-schedules/status');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayScheduleStatus(data);
+                } else {
+                    console.error('Failed to load schedule status');
+                }
+            } catch (error) {
+                console.error('Error loading schedule status:', error);
+            }
+        }
+
+        // Display schedule status in the UI
+        function displayScheduleStatus(schedules) {
+            const container = document.getElementById('scheduleStatus');
+            
+            if (!schedules || schedules.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-2 text-center py-8">
+                        <i class="fas fa-calendar-times text-4xl text-gray-400"></i>
+                        <p class="text-gray-500 mt-2">Aucun horaire de travail configuré</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = schedules.map(schedule => `
+                <div class="border rounded-lg p-4 ${schedule.is_active ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <div class="w-3 h-3 rounded-full ${schedule.status === 'open' ? 'bg-green-500' : schedule.status === 'closed' ? 'bg-red-500' : 'bg-yellow-500'}"></div>
+                                <h3 class="font-semibold text-sm">${schedule.service_name || 'Entreprise'}</h3>
+                                <span class="text-xs px-2 py-1 rounded-full ${schedule.is_active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}">
+                                    ${schedule.is_active ? 'Actif' : 'Inactif'}
+                                </span>
+                            </div>
+                            <div class="space-y-1 text-xs text-gray-600">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-clock"></i>
+                                    <span>${schedule.morning_start} - ${schedule.morning_end}</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-clock"></i>
+                                    <span>${schedule.afternoon_start} - ${schedule.afternoon_end}</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>${schedule.working_days_formatted}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold ${schedule.status === 'open' ? 'text-green-600' : 'text-red-600'}">
+                                ${schedule.status === 'open' ? 'Ouvert' : schedule.status === 'closed' ? 'Fermé' : 'En pause'}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                ${schedule.status_message}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Refresh schedule status
+        function refreshScheduleStatus() {
+            loadScheduleStatus();
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize real-time connection
@@ -799,10 +987,14 @@
             // Load performance stats
             loadPerformanceStats();
             
+            // Load schedule status
+            loadScheduleStatus();
+            
             // Auto-refresh every 30 seconds (reduced if WebSocket works)
             setInterval(() => {
                 if (!isWebSocketConnected) {
-                    location.reload();
+                    loadPerformanceStats();
+                    loadScheduleStatus();
                 }
             }, 30000);
             
@@ -810,6 +1002,7 @@
             document.addEventListener('visibilitychange', function() {
                 if (!document.hidden) {
                     loadPerformanceStats();
+                    loadScheduleStatus();
                 }
             });
         });
@@ -821,6 +1014,7 @@
         window.recallTicket = recallTicket;
         window.refreshService = refreshService;
         window.refreshPerformanceStats = refreshPerformanceStats;
+        window.refreshScheduleStatus = refreshScheduleStatus;
         window.closeMobileMenu = closeMobileMenu;
     </script>
 </body>

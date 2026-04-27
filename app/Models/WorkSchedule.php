@@ -146,22 +146,131 @@ class WorkSchedule extends Model
             return $now->copy()->setTimeFromTimeString($this->afternoon_start);
         }
         
-        // If we're in afternoon, no more opening today
-        if ($this->isInAfternoonHours()) {
-            return null;
-        }
-        
-        // If we're before morning, open at morning start
+        // If we're before morning, return morning start
         if ($now->format('H:i') < $this->morning_start) {
             return $now->copy()->setTimeFromTimeString($this->morning_start);
         }
         
-        // If we're between morning and afternoon, open at afternoon start
-        if ($now->format('H:i') > $this->morning_end && $now->format('H:i') < $this->afternoon_start) {
+        // If we're between morning and afternoon, return afternoon start
+        if ($now->format('H:i') >= $this->morning_end && $now->format('H:i') < $this->afternoon_start) {
             return $now->copy()->setTimeFromTimeString($this->afternoon_start);
         }
         
+        return null; // Already past working hours
+    }
+
+    public function getNextCloseTime(): ?Carbon
+    {
+        if (!$this->isActiveToday()) {
+            return null;
+        }
+
+        $now = now()->setTimezone($this->timezone);
+        
+        // If we're in morning, return morning end
+        if ($this->isInMorningHours()) {
+            return $now->copy()->setTimeFromTimeString($this->morning_end);
+        }
+        
+        // If we're in afternoon, return afternoon end
+        if ($this->isInAfternoonHours()) {
+            return $now->copy()->setTimeFromTimeString($this->afternoon_end);
+        }
+        
         return null;
+    }
+
+    // Méthodes pour lier avec les guichets
+    public function getAffectedCounters()
+    {
+        if ($this->counter_id) {
+            return Counter::where('id', $this->counter_id)->get();
+        } elseif ($this->service_id) {
+            return Counter::where('service_id', $this->service_id)->get();
+        } else {
+            return Counter::where('company_id', $this->company_id)->get();
+        }
+    }
+
+    public function openCounters()
+    {
+        $counters = $this->getAffectedCounters();
+        $openedCount = 0;
+        
+        foreach ($counters as $counter) {
+            if ($counter->status !== 'open') {
+                $counter->update(['status' => 'open']);
+                $openedCount++;
+                
+                // Log l'action
+                \Log::info('Counter Opened by Schedule', [
+                    'counter_id' => $counter->id,
+                    'schedule_id' => $this->id,
+                    'time' => now()->format('H:i:s'),
+                    'timezone' => $this->timezone
+                ]);
+            }
+        }
+        
+        return $openedCount;
+    }
+
+    public function closeCounters()
+    {
+        $counters = $this->getAffectedCounters();
+        $closedCount = 0;
+        
+        foreach ($counters as $counter) {
+            if ($counter->status !== 'closed') {
+                $counter->update(['status' => 'closed']);
+                $closedCount++;
+                
+                // Log l'action
+                \Log::info('Counter Closed by Schedule', [
+                    'counter_id' => $counter->id,
+                    'schedule_id' => $this->id,
+                    'time' => now()->format('H:i:s'),
+                    'timezone' => $this->timezone
+                ]);
+            }
+        }
+        
+        return $closedCount;
+    }
+
+    public function getCounterStatus(): string
+    {
+        if (!$this->isActiveToday()) {
+            return 'closed';
+        }
+
+        if ($this->isInWorkingHours()) {
+            return 'open';
+        }
+
+        return 'closed';
+    }
+
+    public function getStatusMessage(): string
+    {
+        if (!$this->is_active) {
+            return 'Planning inactif';
+        }
+
+        if (!$this->isActiveToday()) {
+            return 'Fermé aujourd\'hui';
+        }
+
+        if ($this->isInWorkingHours()) {
+            return 'Ouvert';
+        }
+
+        $nextOpen = $this->getNextOpenTime();
+        if ($nextOpen) {
+            return "Ouvre à {$nextOpen->format('H:i')}";
+        }
+
+        return 'Fermé';
     }
 
     public function getWorkingDaysFormatted(): string

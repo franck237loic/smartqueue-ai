@@ -83,37 +83,42 @@
 <body class="font-sans antialiased text-gray-900 bg-white">
     
     <!-- Navigation -->
-    <nav class="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
+    <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+            <div class="flex justify-between items-center h-14 sm:h-16">
                 <!-- Logo -->
                 <div class="flex items-center">
-                    <div class="w-10 h-10 hero-gradient rounded-xl flex items-center justify-center">
-                        <i data-lucide="layers" class="w-6 h-6 text-white"></i>
+                    <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 hero-gradient rounded-xl flex items-center justify-center">
+                        <i data-lucide="layers" class="w-4 h-4 sm:w-6 sm:h-6 text-white"></i>
                     </div>
-                    <span class="ml-3 text-xl font-bold gradient-text">SmartQueue</span>
+                    <span class="ml-2 sm:ml-3 text-base sm:text-xl font-bold gradient-text">SmartQueue</span>
                 </div>
-                
-                <!-- Navigation Links -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="#features" class="text-gray-600 hover:text-gray-900 transition">Fonctionnalités</a>
-                    <a href="#how-it-works" class="text-gray-600 hover:text-gray-900 transition">Comment ça marche</a>
-                    <a href="#pricing" class="text-gray-600 hover:text-gray-900 transition">Tarifs</a>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition">
+                    <i data-lucide="menu" class="w-5 h-5 text-gray-600"></i>
+                </button>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-6 lg:space-x-8">
+                    <a href="#features" class="text-gray-600 hover:text-gray-900 transition text-sm">Fonctionnalités</a>
+                    <a href="#how-it-works" class="text-gray-600 hover:text-gray-900 transition text-sm">Comment ça marche</a>
+                    <a href="#pricing" class="text-gray-600 hover:text-gray-900 transition text-sm">Tarifs</a>
                 </div>
-                
-                <!-- Auth Buttons -->
-                <div class="flex items-center space-x-4">
+
+                <!-- Desktop Auth Buttons -->
+                <div class="hidden md:flex items-center space-x-3 lg:space-x-4">
                     @if (Route::has('login'))
                         @auth
-                            <a href="{{ route('select-company') }}" class="text-gray-600 hover:text-gray-900 transition">
+                            <a href="{{ route('select-company') }}" class="text-gray-600 hover:text-gray-900 transition text-sm">
                                 Dashboard
                             </a>
                         @else
-                            <a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-900 transition">
+                            <a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-900 transition text-sm">
                                 Connexion
                             </a>
                             @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="hero-gradient text-white px-6 py-2.5 rounded-full font-medium hover:opacity-90 transition shadow-lg shadow-primary-500/30">
+                                <a href="{{ route('register') }}" class="hero-gradient text-white px-4 lg:px-6 py-2 lg:py-2.5 rounded-full font-medium hover:opacity-90 transition shadow-lg shadow-primary-500/30 text-sm">
                                     Essai Gratuit
                                 </a>
                             @endif
@@ -125,130 +130,124 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
+    <section class="relative pt-20 pb-16 sm:pt-24 sm:pb-20 md:pt-32 md:pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
         <!-- Background Elements -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
             <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary-50/50 to-transparent"></div>
-            <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse-slow"></div>
-            <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
+            <div class="absolute -top-40 -right-20 sm:-right-40 w-40 sm:w-80 h-40 sm:h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse-slow"></div>
+            <div class="absolute -bottom-40 -left-20 sm:-left-40 w-40 sm:w-80 h-40 sm:h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
         </div>
         
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-center">
                 <!-- Hero Content -->
-                <div class="text-center lg:text-left">
-                    <div class="inline-flex items-center px-4 py-2 rounded-full bg-primary-50 text-primary-700 text-sm font-medium mb-6">
-                        <span class="flex h-2 w-2 rounded-full bg-primary-500 mr-2"></span>
-                        Nouveau : Appel intelligent par IA
+                <div class="text-center lg:text-left order-2 lg:order-1">
+                    <div class="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary-50 text-primary-700 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+                        <span class="flex h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary-500 mr-2"></span>
+                        Nouveau : Appel IA
                     </div>
-                    <h1 class="text-4xl lg:text-6xl font-extrabold tracking-tight mb-6">
-                        Gérez vos files d'attente
-                        <span class="gradient-text">intelligemment</span>
+                    <h1 class="text-3xl sm:text-4xl lg:text-6xl font-extrabold tracking-tight mb-4 sm:mb-6">
+                        Gérez vos files
+                        <span class="gradient-text block sm:inline">intelligemment</span>
                     </h1>
-                    <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0">
-                        Solution SaaS multi-tenant pour la gestion de tickets et files d'attente. 
-                        Optimisez l'expérience client avec l'appel automatique et le suivi en temps réel.
+                    <p class="text-sm sm:text-base md:text-lg text-gray-600 mb-4 sm:mb-6 md:mb-8 max-w-xs sm:max-w-2xl mx-auto lg:mx-0">
+                        Solution SaaS pour la gestion de tickets. 
+                        Optimisez l'expérience avec appel automatique.
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                        <a href="{{ route('client.ticket') }}" class="hero-gradient text-white px-8 py-4 rounded-full font-semibold hover:opacity-90 transition shadow-xl shadow-primary-500/30 inline-flex items-center justify-center">
-                            <i data-lucide="ticket" class="mr-2 w-5 h-5"></i>
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center sm:justify-start lg:justify-start">
+                        <a href="{{ route('client.ticket') }}" class="hero-gradient text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold hover:opacity-90 transition shadow-xl shadow-primary-500/30 inline-flex items-center justify-center text-sm sm:text-base">
+                            <i data-lucide="ticket" class="mr-2 w-4 h-4 sm:w-5 sm:h-5"></i>
                             Prendre un ticket
                         </a>
-                        <a href="{{ route('register') }}" class="bg-white text-gray-700 border border-gray-300 px-8 py-4 rounded-full font-semibold hover:bg-gray-50 transition inline-flex items-center justify-center">
-                            <i data-lucide="store" class="mr-2 w-5 h-5 text-primary-500"></i>
+                        <a href="{{ route('register') }}" class="bg-white text-gray-700 border border-gray-300 px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold hover:bg-gray-50 transition inline-flex items-center justify-center text-sm sm:text-base">
+                            <i data-lucide="store" class="mr-2 w-4 h-4 sm:w-5 sm:h-5 text-primary-500"></i>
                             Espace Entreprise
                         </a>
                     </div>
                     
                     <!-- Stats -->
-                    <div class="mt-10 grid grid-cols-3 gap-8 border-t border-gray-100 pt-8">
-                        <div>
-                            <div class="text-2xl font-bold text-gray-900">50K+</div>
-                            <div class="text-sm text-gray-500">Tickets/jour</div>
+                    <div class="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 border-t border-gray-100 pt-6 sm:pt-8">
+                        <div class="text-center">
+                            <div class="text-xl sm:text-2xl font-bold text-gray-900">50K+</div>
+                            <div class="text-xs sm:text-sm text-gray-500">Tickets/jour</div>
                         </div>
-                        <div>
-                            <div class="text-2xl font-bold text-gray-900">98%</div>
-                            <div class="text-sm text-gray-500">Satisfaction</div>
+                        <div class="text-center">
+                            <div class="text-xl sm:text-2xl font-bold text-gray-900">98%</div>
+                            <div class="text-xs sm:text-sm text-gray-500">Satisfaction</div>
                         </div>
-                        <div>
-                            <div class="text-2xl font-bold text-gray-900">30%</div>
-                            <div class="text-sm text-gray-500">Temps gagné</div>
+                        <div class="text-center">
+                            <div class="text-xl sm:text-2xl font-bold text-gray-900">30%</div>
+                            <div class="text-xs sm:text-sm text-gray-500">Temps gagné</div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Hero Image/Illustration -->
-                <div class="relative">
-                    <div class="relative bg-white rounded-2xl shadow-2xl p-6 animate-float">
+                <div class="relative order-1 lg:order-2">
+                    <div class="relative bg-white rounded-2xl shadow-2xl p-4 sm:p-6 animate-float max-w-md mx-auto lg:max-w-none">
                         <!-- Mock Dashboard -->
-                        <div class="bg-gray-50 rounded-xl p-4 mb-4">
-                            <div class="flex items-center justify-between mb-4">
+                        <div class="bg-gray-50 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
+                            <div class="flex items-center justify-between mb-3 sm:mb-4">
                                 <div class="flex items-center space-x-2">
-                                    <div class="w-3 h-3 rounded-full bg-red-400"></div>
-                                    <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
-                                    <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-400"></div>
+                                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400"></div>
+                                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-400"></div>
                                 </div>
-                                <span class="text-xs text-gray-400">Dashboard Agent</span>
+                                <span class="text-xs text-gray-400">Dashboard</span>
                             </div>
-                            <div class="space-y-3">
-                                <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-                                            <span class="text-primary-700 font-bold">A</span>
+                            <div class="space-y-2 sm:space-y-3">
+                                <div class="bg-white p-2 sm:p-3 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between">
+                                    <div class="flex items-center space-x-2 sm:space-x-3">
+                                        <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                            <span class="text-primary-700 font-bold text-xs sm:text-sm">A</span>
                                         </div>
-                                        <div>
-                                            <div class="font-semibold text-gray-900">A042</div>
-                                            <div class="text-xs text-gray-500">Accueil Principal</div>
+                                        <div class="hidden sm:block">
+                                            <div class="font-semibold text-gray-900 text-sm">A042</div>
+                                            <div class="text-xs text-gray-500">Accueil</div>
+                                        </div>
+                                        <div class="sm:hidden">
+                                            <div class="font-semibold text-gray-900 text-xs">A042</div>
                                         </div>
                                     </div>
-                                    <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Appelé</span>
+                                    <span class="px-2 py-0.5 sm:px-3 sm:py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Appelé</span>
                                 </div>
-                                <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                                            <span class="text-purple-700 font-bold">B</span>
+                                <div class="bg-white p-2 sm:p-3 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between">
+                                    <div class="flex items-center space-x-2 sm:space-x-3">
+                                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                            <span class="text-purple-700 font-bold text-xs sm:text-sm">B</span>
                                         </div>
-                                        <div>
-                                            <div class="font-semibold text-gray-900">B015</div>
-                                            <div class="text-xs text-gray-500">Service Client</div>
+                                        <div class="hidden sm:block">
+                                            <div class="font-semibold text-gray-900 text-sm">B015</div>
+                                            <div class="text-xs text-gray-500">Service</div>
                                         </div>
-                                    </div>
-                                    <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">En attente</span>
-                                </div>
-                                <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                                            <span class="text-orange-700 font-bold">A</span>
-                                        </div>
-                                        <div>
-                                            <div class="font-semibold text-gray-900">A043</div>
-                                            <div class="text-xs text-gray-500">Accueil Principal</div>
+                                        <div class="sm:hidden">
+                                            <div class="font-semibold text-gray-900 text-xs">B015</div>
                                         </div>
                                     </div>
-                                    <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">En file</span>
+                                    <span class="px-2 py-0.5 sm:px-3 sm:py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Attente</span>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Action Buttons -->
-                        <div class="grid grid-cols-2 gap-3">
-                            <button class="hero-gradient text-white py-3 rounded-lg font-medium flex items-center justify-center">
-                                <i data-lucide="phone-call" class="w-5 h-5 mr-2"></i>
-                                Appeler Suivant
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                            <button class="hero-gradient text-white py-2 sm:py-3 rounded-lg font-medium flex items-center justify-center text-xs sm:text-sm">
+                                <i data-lucide="phone-call" class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"></i>
+                                Appeler
                             </button>
-                            <button class="bg-gray-100 text-gray-700 py-3 rounded-lg font-medium flex items-center justify-center hover:bg-gray-200 transition">
-                                <i data-lucide="pause" class="w-5 h-5 mr-2"></i>
+                            <button class="bg-gray-100 text-gray-700 py-2 sm:py-3 rounded-lg font-medium flex items-center justify-center hover:bg-gray-200 transition text-xs sm:text-sm">
+                                <i data-lucide="pause" class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"></i>
                                 Pause
                             </button>
                         </div>
                         
                         <!-- Floating Badge -->
-                        <div class="absolute -top-4 -right-4 bg-white rounded-full shadow-lg p-3 animate-float" style="animation-delay: 1s;">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                    <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                        <div class="absolute -top-3 sm:-top-4 -right-3 sm:-right-4 bg-white rounded-full shadow-lg p-2 sm:p-3 animate-float hidden sm:block" style="animation-delay: 1s;">
+                            <div class="flex items-center space-x-1 sm:space-x-2">
+                                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i data-lucide="check" class="w-3 h-3 sm:w-4 sm:h-4 text-green-600"></i>
                                 </div>
-                                <span class="text-sm font-medium text-gray-700">Service rapide!</span>
+                                <span class="text-xs sm:text-sm font-medium text-gray-700 hidden sm:inline">Service rapide!</span>
                             </div>
                         </div>
                     </div>
@@ -258,82 +257,82 @@
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="py-20 bg-gray-50">
+    <section id="features" class="py-12 sm:py-16 lg:py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <span class="text-primary-600 font-semibold text-sm uppercase tracking-wide">Fonctionnalités</span>
-                <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mt-2 mb-4">
+            <div class="text-center mb-8 sm:mb-12 lg:mb-16">
+                <span class="text-primary-600 font-semibold text-xs sm:text-sm uppercase tracking-wide">Fonctionnalités</span>
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mt-2 mb-3 sm:mb-4">
                     Tout ce dont vous avez besoin
                 </h2>
-                <p class="text-gray-600 max-w-2xl mx-auto">
-                    Une suite complète d'outils pour gérer efficacement vos files d'attente et améliorer l'expérience client.
+                <p class="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
+                    Une suite complète pour gérer efficacement vos files d'attente.
                 </p>
             </div>
             
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 <!-- Feature 1 -->
-                <div class="feature-card bg-white rounded-2xl p-8 shadow-sm border border-gray-100 transition-all duration-300">
-                    <div class="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-6">
-                        <i data-lucide="ticket" class="w-7 h-7 text-primary-600"></i>
+                <div class="feature-card bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm border border-gray-100 transition-all duration-300">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i data-lucide="ticket" class="w-6 h-6 sm:w-7 sm:h-7 text-primary-600"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Gestion des Tickets</h3>
-                    <p class="text-gray-600">
-                        Création automatique de tickets avec numérotation intelligente par service et suivi en temps réel.
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Gestion des Tickets</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">
+                        Création automatique avec numérotation intelligente et suivi temps réel.
                     </p>
                 </div>
                 
                 <!-- Feature 2 -->
-                <div class="feature-card bg-white rounded-2xl p-8 shadow-sm border border-gray-100 transition-all duration-300">
-                    <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
-                        <i data-lucide="users" class="w-7 h-7 text-purple-600"></i>
+                <div class="feature-card bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm border border-gray-100 transition-all duration-300">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i data-lucide="users" class="w-6 h-6 sm:w-7 sm:h-7 text-purple-600"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Multi-Agents</h3>
-                    <p class="text-gray-600">
-                        Gestion simultanée de plusieurs guichets et agents avec distribution intelligente de la charge.
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Multi-Agents</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">
+                        Gestion simultanée avec distribution intelligente de la charge.
                     </p>
                 </div>
                 
                 <!-- Feature 3 -->
-                <div class="feature-card bg-white rounded-2xl p-8 shadow-sm border border-gray-100 transition-all duration-300">
-                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-6">
-                        <i data-lucide="volume-2" class="w-7 h-7 text-green-600"></i>
+                <div class="feature-card bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm border border-gray-100 transition-all duration-300">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-green-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i data-lucide="volume-2" class="w-6 h-6 sm:w-7 sm:h-7 text-green-600"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Appel Vocal</h3>
-                    <p class="text-gray-600">
-                        Annonces vocales automatiques avec synthèse vocale pour guider les clients vers leur guichet.
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Appel Vocal</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">
+                        Annonces vocales automatiques pour guider les clients.
                     </p>
                 </div>
                 
                 <!-- Feature 4 -->
-                <div class="feature-card bg-white rounded-2xl p-8 shadow-sm border border-gray-100 transition-all duration-300">
-                    <div class="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-6">
-                        <i data-lucide="monitor" class="w-7 h-7 text-orange-600"></i>
+                <div class="feature-card bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm border border-gray-100 transition-all duration-300">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i data-lucide="monitor" class="w-6 h-6 sm:w-7 sm:h-7 text-orange-600"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Affichage Public</h3>
-                    <p class="text-gray-600">
-                        Écran d'affichage temps réel pour les salles d'attente avec liste des tickets appelés.
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Affichage Public</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">
+                        Écran temps réel pour les salles d'attente.
                     </p>
                 </div>
                 
                 <!-- Feature 5 -->
-                <div class="feature-card bg-white rounded-2xl p-8 shadow-sm border border-gray-100 transition-all duration-300">
-                    <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-6">
-                        <i data-lucide="bell" class="w-7 h-7 text-red-600"></i>
+                <div class="feature-card bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm border border-gray-100 transition-all duration-300">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-red-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i data-lucide="bell" class="w-6 h-6 sm:w-7 sm:h-7 text-red-600"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Notifications</h3>
-                    <p class="text-gray-600">
-                        Alertes SMS et email pour informer les clients de leur tour et réduire l'absentéisme.
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Notifications</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">
+                        Alertes SMS et email pour informer les clients.
                     </p>
                 </div>
                 
                 <!-- Feature 6 -->
-                <div class="feature-card bg-white rounded-2xl p-8 shadow-sm border border-gray-100 transition-all duration-300">
-                    <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
-                        <i data-lucide="bar-chart-3" class="w-7 h-7 text-blue-600"></i>
+                <div class="feature-card bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm border border-gray-100 transition-all duration-300">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i data-lucide="bar-chart-3" class="w-6 h-6 sm:w-7 sm:h-7 text-blue-600"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Analytics</h3>
-                    <p class="text-gray-600">
-                        Tableaux de bord et rapports détaillés sur les temps d'attente, service et satisfaction.
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Analytics</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">
+                        Tableaux de bord et rapports sur les performances.
                     </p>
                 </div>
             </div>
@@ -353,7 +352,7 @@
                 </p>
             </div>
             
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
                 <!-- Step 1 -->
                 <div class="text-center">
                     <div class="w-20 h-20 mx-auto bg-primary-100 rounded-2xl flex items-center justify-center mb-6 relative">
@@ -408,7 +407,7 @@
     <!-- CTA Section -->
     <section class="py-20 relative overflow-hidden">
         <div class="absolute inset-0 hero-gradient"></div>
-        <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="relative max-w-2xl sm:max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-3xl lg:text-4xl font-bold text-white mb-6">
                 Prêt à moderniser votre gestion de files d'attente ?
             </h2>
@@ -483,6 +482,48 @@
         if (window.lucide) {
             window.lucide.createIcons({ icons: window.lucide.icons });
         }
+    </script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Mobile menu functionality
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const closeMobileMenuBtn = document.getElementById('close-mobile-menu');
+        
+        function openMobileMenu() {
+            mobileMenu.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeMobileMenu() {
+            mobileMenu.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        mobileMenuBtn?.addEventListener('click', openMobileMenu);
+        closeMobileMenuBtn?.addEventListener('click', closeMobileMenu);
+        
+        // Close menu when clicking on links
+        const mobileLinks = mobileMenu?.querySelectorAll('a');
+        mobileLinks?.forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+        
+        // Close menu when clicking outside
+        mobileMenu?.addEventListener('click', (e) => {
+            if (e.target === mobileMenu) {
+                closeMobileMenu();
+            }
+        });
+        
+        // Handle escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !mobileMenu?.classList.contains('hidden')) {
+                closeMobileMenu();
+            }
+        });
     </script>
 </body>
 </html>

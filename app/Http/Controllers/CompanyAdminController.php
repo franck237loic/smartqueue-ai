@@ -211,7 +211,27 @@ class CompanyAdminController extends Controller
                     }
                 },
             ],
+            // Validation des horaires
+            'heure_debut_matin' => 'required|date_format:H:i',
+            'heure_fin_matin' => 'required|date_format:H:i|after:heure_debut_matin',
+            'heure_debut_apres_midi' => 'required|date_format:H:i',
+            'heure_fin_apres_midi' => 'required|date_format:H:i|after:heure_debut_apres_midi',
+            'jours_travail' => 'required|array|min:1',
+            'jours_travail.*' => 'required|integer|between:1,7',
+            'timezone' => 'required|string|timezone',
+        ], [
+            'heure_fin_matin.after' => 'L\'heure de fin du matin doit être après l\'heure de début.',
+            'heure_fin_apres_midi.after' => 'L\'heure de fin de l\'après-midi doit être après l\'heure de début.',
+            'jours_travail.required' => 'Veuillez sélectionner au moins un jour de travail.',
+            'jours_travail.min' => 'Veuillez sélectionner au moins un jour de travail.',
         ]);
+
+        // Validation supplémentaire : l'heure de début après-midi doit être après l'heure de fin matin
+        if ($data['heure_debut_apres_midi'] <= $data['heure_fin_matin']) {
+            return back()->withErrors([
+                'heure_debut_apres_midi' => 'L\'heure de début de l\'après-midi doit être après l\'heure de fin du matin.'
+            ])->withInput();
+        }
 
         // Créer l'utilisateur
         $user = User::create([
@@ -228,8 +248,25 @@ class CompanyAdminController extends Controller
             'counter_id' => $data['counter_id'] ?? null,
         ]);
 
+        // Créer l'horaire de travail si c'est un agent
+        if ($data['role'] === 'agent') {
+            \App\Models\WorkSchedule::create([
+                'company_id' => $company->id,
+                'user_id' => $user->id,
+                'service_id' => $data['counter_id'] ? \App\Models\Counter::find($data['counter_id'])?->service_id : null,
+                'counter_id' => $data['counter_id'] ?? null,
+                'morning_start' => $data['heure_debut_matin'],
+                'morning_end' => $data['heure_fin_matin'],
+                'afternoon_start' => $data['heure_debut_apres_midi'],
+                'afternoon_end' => $data['heure_fin_apres_midi'],
+                'working_days' => implode(',', $data['jours_travail']),
+                'timezone' => $data['timezone'],
+                'is_active' => true,
+            ]);
+        }
+
         return redirect()->route('company.admin.agents', $company)
-            ->with('success', 'Agent créé avec succès.');
+            ->with('success', 'Agent créé avec succès' . ($data['role'] === 'agent' ? ' et horaires configurés.' : '.'));
     }
 
     public function editAgent(Company $company, User $agent)
@@ -382,6 +419,13 @@ class CompanyAdminController extends Controller
         ];
 
         return view('company.admin.statistics.service', compact('company', 'service', 'stats'));
+    }
+
+    // ========== PARAMÈTRES ==========
+
+    public function settings(Company $company)
+    {
+        return view('company.admin.settings', compact('company'));
     }
 
     // ========== HELPERS ==========

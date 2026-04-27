@@ -539,6 +539,9 @@ Route::middleware(['auth', 'belongs.to.company'])->group(function () {
  
             // Tickets admin
             Route::get('/tickets', [TicketController::class, 'index'])->name('admin.tickets.index');
+            
+            // Paramètres
+            Route::get('/settings', [CompanyAdminController::class, 'settings'])->name('settings');
         });
  
     /*
