@@ -1,0 +1,1582 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualiseur de Diagrammes UML - SmartQueue AI (Version Complète)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 18px 30px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .tab.active {
+            background: white;
+            color: #4f46e5;
+            border-bottom-color: #4f46e5;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+            min-height: 700px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .diagram-container {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            overflow: auto;
+        }
+
+        .diagram-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .diagram-text {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 13px;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 30px;
+            border-radius: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            border: 1px solid #334155;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-ok { 
+            background: #10b981; 
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .stats {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-left: 4px solid #4f46e5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info-box h3 {
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Visualiseur de Diagrammes UML</h1>
+            <p>SmartQueue AI - Version Complète et Professionnelle</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Diagrammes UML</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">30+</div>
+                <div class="stat-label">Cas d'utilisation</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Classes principales</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">En français</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>📋 Instructions d'utilisation</h3>
+            <p>Copiez le code de chaque diagramme et collez-le dans <a href="https://mermaid.live" target="_blank" style="color: #4f46e5; text-decoration: underline;">Mermaid Live</a> pour une visualisation graphique interactive. Tous les diagrammes sont optimisés pour Mermaid 11.14+.</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('classes')">🏗️ Classes</button>
+            <button class="tab" onclick="showTab('cas_utilisation')">🎯 Cas d'Utilisation</button>
+            <button class="tab" onclick="showTab('sequence_auth')">🔐 Séquence Auth</button>
+            <button class="tab" onclick="showTab('sequence_ticket')">🎫 Séquence Ticket</button>
+            <button class="tab" onclick="showTab('activite')">📋 Activité</button>
+            <button class="tab" onclick="showTab('etats')">🔄 États</button>
+            <button class="tab" onclick="showTab('composants')">🧩 Composants</button>
+            <button class="tab" onclick="showTab('communication')">📡 Communication</button>
+        </div>
+
+        <!-- Diagramme de Classes -->
+        <div id="classes" class="tab-content active">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🏗️ Diagramme de Classes Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+classDiagram
+    class Entreprise {
+        -int id
+        -string nom
+        -string slug
+        -string logo
+        -string adresse
+        -string telephone
+        -string email
+        -string site_web
+        -string statut
+        -datetime fin_abonnement
+        -json parametres
+        -datetime cree_le
+        -datetime mis_a_jour_le
+        -datetime supprime_le
+        --
+        +services()
+        +utilisateurs()
+        +guichets()
+        +tickets()
+        +horaires_travail()
+        +journaux_audit()
+        +estActif()
+        +getParametres()
+    }
+
+    class Utilisateur {
+        -int id
+        -string nom
+        -string email
+        -string mot_de_passe
+        -string telephone
+        -string avatar
+        -string role
+        -datetime email_verifie_le
+        -datetime cree_le
+        -datetime mis_a_jour_le
+        -datetime supprime_le
+        --
+        +entreprises()
+        +guichetsAssignes()
+        +tickets()
+        +horaires_travail()
+        +journaux_audit()
+        +estSuperAdmin()
+        +aRoleDansEntreprise()
+        +getRoleDansEntreprise()
+    }
+
+    class UtilisateurEntreprise {
+        -int id
+        -int entreprise_id
+        -int utilisateur_id
+        -string role
+        -int guichet_id
+        -boolean est_defaut
+        -datetime derniere_connexion
+        -datetime cree_le
+        -datetime mis_a_jour_le
+        --
+        +entreprise()
+        +utilisateur()
+        +guichet()
+        +estAdmin()
+        +estAgent()
+    }
+
+    class Service {
+        -int id
+        -int entreprise_id
+        -string nom
+        -string description
+        -int temps_service_estime
+        -int timeout_manque
+        -int taille_file_max
+        -boolean est_actif
+        -datetime cree_le
+        -datetime mis_a_jour_le
+        -datetime supprime_le
+        --
+        +entreprise()
+        +guichets()
+        +tickets()
+        +ticketsEnAttente()
+        +getTempsAttenteMoyen()
+        +getTailleFile()
+    }
+
+    class Guichet {
+        -int id
+        -int entreprise_id
+        -int service_id
+        -int utilisateur_id
+        -string nom
+        -string numero
+        -string emplacement
+        -string statut
+        -boolean est_actif
+        -datetime ouvert_le
+        -datetime ferme_le
+        -datetime pause_le
+        -datetime auto_ferme_le
+        -datetime hors_ligne_le
+        -datetime cree_le
+        -datetime mis_a_jour_le
+        -datetime supprime_le
+        --
+        +entreprise()
+        +service()
+        +utilisateur()
+        +tickets()
+        +horaires_travail()
+        +estOuvert()
+        +ouvrir()
+        +fermer()
+        +mettreEnPause()
+        +getTicketActuel()
+    }
+
+    class Ticket {
+        -int id
+        -int entreprise_id
+        -int service_id
+        -int guichet_id
+        -int agent_id
+        -string numero
+        -int sequence
+        -string statut
+        -int priorite
+        -string nom_client
+        -string telephone_client
+        -string email_client
+        -datetime appele_le
+        -datetime present_le
+        -datetime servi_le
+        -datetime manque_le
+        -datetime annule_le
+        -int temps_service_reel
+        -int nombre_manques
+        -string notes
+        -string motif_annulation
+        -string reponse_client
+        -datetime reponse_client_le
+        -string code_reponse_client
+        -datetime cree_le
+        -datetime mis_a_jour_le
+        -datetime supprime_le
+        --
+        +entreprise()
+        +service()
+        +guichet()
+        +agent()
+        +appeler()
+        +servir()
+        +marquerCommeManque()
+        +annuler()
+        +getPosition()
+        +getTempsAttenteMinutes()
+        +getTempsServiceMinutes()
+        +repondrePresent()
+        +repondreRetarde()
+        +repondreAbsent()
+        +estTimeoutManqueExpire()
+    }
+
+    class HoraireTravail {
+        -int id
+        -int entreprise_id
+        -int guichet_id
+        -int utilisateur_id
+        -string jour_semaine
+        -time heure_debut
+        -time heure_fin
+        -time pause_debut
+        -time pause_fin
+        -boolean est_actif
+        -datetime cree_le
+        -datetime mis_a_jour_le
+        -datetime supprime_le
+        --
+        +entreprise()
+        +guichet()
+        +utilisateur()
+        +estEnServiceMaintenant()
+        +getHeuresTravail()
+    }
+
+    class JournalAudit {
+        -int id
+        -int utilisateur_id
+        -int entreprise_id
+        -string action
+        -string type_modele
+        -int modele_id
+        -text anciennes_valeurs
+        -text nouvelles_valeurs
+        -string adresse_ip
+        -string user_agent
+        -datetime cree_le
+        --
+        +utilisateur()
+        +entreprise()
+        +getChangements()
+    }
+
+    Entreprise "1" -- "*" UtilisateurEntreprise : possede
+    Utilisateur "1" -- "*" UtilisateurEntreprise : appartient_a
+    UtilisateurEntreprise "0..1" -- "1" Guichet : assigne_a
+    Entreprise "1" -- "*" Service : propose
+    Service "1" -- "*" Guichet : dispose_de
+    Entreprise "1" -- "*" Ticket : genere
+    Service "1" -- "*" Ticket : cree_pour
+    Guichet "1" -- "*" Ticket : traite_a
+    Utilisateur "1" -- "*" Ticket : gere_par
+    Entreprise "1" -- "*" HoraireTravail : definit
+    Guichet "1" -- "*" HoraireTravail : planifie_pour
+    Utilisateur "1" -- "*" HoraireTravail : travaille_pendant
+    Entreprise "1" -- "*" JournalAudit : enregistre
+    Utilisateur "1" -- "*" JournalAudit : effectue
+
+    Service "1" -- "*" Ticket : concerne
+    Guichet "0..1" -- "1" Utilisateur : attribue_a
+    Ticket "0..1" -- "1" Utilisateur : gere_par
+    Ticket "0..1" -- "1" Guichet : servi_a
+                </div>
+                <button class="copy-btn" onclick="copyDiagram('classes')">
+                    📋 Copier le code
+                </button>
+            </div>
+        </div>
+
+        <!-- Diagramme de Cas d'Utilisation -->
+        <div id="cas_utilisation" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🎯 Diagramme de Cas d'Utilisation Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+graph TD
+    subgraph "SmartQueue AI"
+        UC1[Prendre un ticket]
+        UC2[Voir statut du ticket]
+        UC3[Répondre à l'appel]
+        UC4[Recevoir les notifications]
+        UC5[Voir tableau de bord agent]
+        UC6[Gérer la file d'attente]
+        UC7[Appeler un ticket]
+        UC8[Servir un ticket]
+        UC9[Marquer comme manqué]
+        UC10[Voir l'historique]
+        UC11[Rappeler un ticket]
+        UC12[Voir tableau de bord admin]
+        UC13[Gérer l'entreprise]
+        UC14[Gérer les services]
+        UC15[Gérer les guichets]
+        UC16[Gérer les agents]
+        UC17[Voir les statistiques]
+        UC18[Gérer les horaires]
+        UC19[Exporter les rapports]
+        UC20[Gérer les entreprises globales]
+        UC21[Voir les analytics globaux]
+        UC22[Gérer les utilisateurs système]
+        UC23[Configuration système]
+        UC24[Surveiller les files]
+        UC25[Gérer les priorités]
+        UC26[Configurer les notifications]
+        UC27[Gérer les absences]
+        UC28[Planifier les pauses]
+        UC29[Analyser les performances]
+        UC30[Gérer les alertes]
+    end
+    
+    Client[Client] --> UC1
+    Client --> UC2
+    Client --> UC3
+    Client --> UC4
+    
+    Agent[Agent] --> UC5
+    Agent --> UC6
+    Agent --> UC7
+    Agent --> UC8
+    Agent --> UC9
+    Agent --> UC10
+    Agent --> UC11
+    Agent --> UC24
+    Agent --> UC25
+    Agent --> UC27
+    Agent --> UC28
+    
+    AdminEntreprise[Admin Entreprise] --> UC12
+    AdminEntreprise --> UC13
+    AdminEntreprise --> UC14
+    AdminEntreprise --> UC15
+    AdminEntreprise --> UC16
+    AdminEntreprise --> UC17
+    AdminEntreprise --> UC18
+    AdminEntreprise --> UC19
+    AdminEntreprise --> UC26
+    AdminEntreprise --> UC29
+    AdminEntreprise --> UC30
+    
+    SuperAdmin[Super Admin] --> UC20
+    SuperAdmin --> UC21
+    SuperAdmin --> UC22
+    SuperAdmin --> UC23
+    
+    UC1 -.-> UC6
+    UC7 -.-> UC4
+    UC8 -.-> UC17
+    UC14 -.-> UC15
+    UC24 -.-> UC6
+    UC29 -.-> UC17
+                </div>
+                <button class="copy-btn" onclick="copyDiagram('cas_utilisation')">
+                    📋 Copier le code
+                </button>
+            </div>
+        </div>
+
+        <!-- Diagramme de Séquence Authentification -->
+        <div id="sequence_auth" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🔐 Séquence d'Authentification Complète
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+sequenceDiagram
+    participant Utilisateur as utilisateur
+    participant Navigateur as navigateur
+    participant Application as application
+    participant MiddlewareAuth as middleware_auth
+    participant BaseDeDonnees as base_de_donnees
+    participant Session as session
+    participant Cache as cache
+    participant JournalAudit as journal_audit
+    
+    utilisateur->>navigateur: Saisit email et mot de passe
+    navigateur->>application: POST /connexion (identifiants)
+    application->>middleware_auth: Vérifier authentification
+    middleware_auth->>base_de_donnees: SELECT * FROM utilisateurs WHERE email = ?
+    base_de_donnees-->>middleware_auth: Données utilisateur
+    middleware_auth->>middleware_auth: Vérifier mot de passe (hash bcrypt)
+    alt Mot de passe correct
+        middleware_auth->>base_de_donnees: Vérifier rôle dans entreprise
+        base_de_donnees-->>middleware_auth: Rôle et permissions
+        middleware_auth->>session: Créer session utilisateur sécurisée
+        middleware_auth->>cache: Stocker permissions en cache
+        middleware_auth-->>application: Authentification réussie
+        application->>base_de_donnees: UPDATE utilisateurs SET derniere_connexion = MAINTENANT()
+        application->>journal_audit: INSERT INTO journaux_audit (action: connexion_reussie)
+        application->>cache: Mettre à jour statistiques connexions
+        application-->>navigateur: Redirection vers tableau de bord selon rôle
+        navigateur-->>utilisateur: Affichage interface appropriée
+    else Mot de passe incorrect
+        middleware_auth-->>application: Erreur d'authentification
+        application->>journal_audit: INSERT INTO journaux_audit (action: connexion_echouee)
+        application->>base_de_donnees: Incrémenter tentatives échouées
+        application->>base_de_donnees: Vérifier blocage compte (max tentatives)
+        application-->>navigateur: Message d'erreur sécurisé
+        navigateur-->>utilisateur: Afficher erreur avec détails limités
+    end
+                </div>
+                <button class="copy-btn" onclick="copyDiagram('sequence_auth')">
+                    📋 Copier le code
+                </button>
+            </div>
+        </div>
+
+        <!-- Diagramme de Séquence Ticket -->
+        <div id="sequence_ticket" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🎫 Séquence de Gestion Ticket Complète
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+sequenceDiagram
+    participant Agent as agent
+    participant Controleur as controleur
+    participant ModeleTicket as modele_ticket
+    participant BaseDeDonnees as base_de_donnees
+    participant WebSocket as websocket
+    participant Twilio as twilio
+    participant Client as client
+    participant SystemeNotification as systeme_notification
+    participant FileAttente as file_attente
+    participant Statistiques as statistiques
+    participant JournalAudit as journal_audit
+    
+    agent->>controleur: GET /tickets/en_attente
+    controleur->>base_de_donnees: SELECT * FROM tickets WHERE statut = 'EN_ATTENTE'
+    base_de_donnees-->>controleur: Liste tickets en attente par service
+    controleur->>file_attente: Calculer positions dans file
+    file_attente-->>controleur: Positions mises à jour
+    controleur-->>agent: Affiche file d'attente avec temps d'attente
+    
+    agent->>controleur: POST /tickets/{id}/rappeler
+    controleur->>modele_ticket: trouver(id)
+    modele_ticket->>base_de_donnees: SELECT * FROM tickets WHERE id = ?
+    base_de_donnees-->>modele_ticket: Données complètes ticket
+    modele_ticket->>modele_ticket: Vérifier accès agent au service
+    modele_ticket->>base_de_donnees: UPDATE tickets SET statut='APPELE', agent_id, appele_le=MAINTENANT()
+    base_de_donnees-->>modele_ticket: Confirmation mise à jour
+    modele_ticket->>file_attente: Recalculer positions restantes
+    file_attente-->>modele_ticket: Positions mises à jour
+    
+    controleur->>websocket: broadcast('ticket.appelle', {ticket_id, agent_id, numero})
+    controleur->>twilio: envoyerSMS(telephone_client, message_appel)
+    controleur->>systeme_notification: creerNotificationClient(ticket_id, type_appel)
+    controleur->>journal_audit: INSERT INTO journal_audit (action: rappel_ticket)
+    controleur->>statistiques: incrementerAppels(agent_id, service_id)
+    controleur-->>agent: JSON {success: true, ticket_details}
+    
+    websocket-->>client: Notification temps réel (WebSocket)
+    twilio-->>client: SMS notification avec numéro ticket
+    systeme_notification-->>client: Notification push si app mobile
+    
+    client->>controleur: POST /tickets/{id}/repondre (reponse: 'present')
+    controleur->>modele_ticket: trouver(id)
+    modele_ticket->>base_de_donnees: UPDATE tickets SET statut='PRESENT', present_le=MAINTENANT(), reponse_client='present'
+    base_de_donnees-->>modele_ticket: Confirmation mise à jour
+    controleur->>websocket: broadcast('ticket.present', {ticket_id, agent_id})
+    controleur->>journal_audit: INSERT INTO journal_audit (action: client_present)
+    websocket-->>agent: Client confirmé présent avec temps d'attente
+    
+    agent->>controleur: POST /tickets/{id}/servir
+    controleur->>modele_ticket: marquerCommeServi()
+    modele_ticket->>base_de_donnees: UPDATE tickets SET statut='SERVI', servi_le=MAINTENANT(), temps_service_reel=?
+    base_de_donnees-->>modele_ticket: Confirmation mise à jour
+    controleur->>websocket: broadcast('ticket.servi', {ticket_id, agent_id, temps_service})
+    controleur->>statistiques: mettreAJourPerformanceAgent(agent_id, temps_service)
+    controleur->>file_attente: Mettre à jour file d'attente
+    controleur->>journal_audit: INSERT INTO journal_audit (action: ticket_servi)
+    websocket-->>admin: Statistiques agent mises à jour en temps réel
+                </div>
+                <button class="copy-btn" onclick="copyDiagram('sequence_ticket')">
+                    📋 Copier le code
+                </button>
+            </div>
+        </div>
+
+        <!-- Diagramme d'Activité -->
+        <div id="activite" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    📋 Diagramme d'Activité - Workflow Ticket Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+flowchart TD
+    A[Début] --> B[Client demande un ticket]
+    B --> C[Vérifier disponibilité du service]
+    C -->|Service non disponible| D[Afficher message indisponible]
+    D --> E[Fin du processus]
+    C -->|Service disponible| F[Générer numéro unique]
+    F --> G[Calculer position dans file]
+    G --> H[Créer ticket statut EN_ATTENTE]
+    H --> I[Ajouter à la file d'attente]
+    I --> J[Envoyer confirmation au client]
+    J --> K[Vérifier agent disponible]
+    K -->|Agent non disponible| K
+    K -->|Agent disponible| L[Sélectionner prochain ticket selon priorité]
+    L --> M[Assigner agent et guichet]
+    M --> N[Mettre à jour statut APPELÉ]
+    N --> O[Envoyer notifications SMS/WebSocket]
+    O --> P[Démarrer timer timeout]
+    P --> Q[Client répond à l'appel?]
+    
+    Q -->|Oui| R[Type de réponse client]
+    R -->|Présent| S[Mettre à jour statut PRÉSENT]
+    S --> T[Confirmer présence à l'agent]
+    T --> U[Mettre à jour statut EN_SERVICE]
+    U --> V[Démarrer timer de service]
+    V --> W[Service terminé?]
+    W -->|Non| V
+    W -->|Oui| X[Calculer temps de service réel]
+    X --> Y[Mettre à jour statut SERVI]
+    Y --> Z[Mettre à jour statistiques agent]
+    Z --> AA[Mettre à jour statistiques service]
+    AA --> AB[Notifier fin de service]
+    AB --> AC[Nettoyer file d'attente]
+    AC --> AD[Mettre à jour positions]
+    AD --> AE[Fin du processus]
+    
+    R -->|Retardé| AF[Mettre en attente retardée]
+    AF --> AG[Replanifier appel automatique]
+    AG --> K
+    
+    R -->|Absent| AH[Timeout atteint?]
+    Q -->|Non| AH
+    AH -->|Oui| AI[Incrémenter nombre de manques]
+    AI --> AJ[Mettre à jour statut MANQUÉ]
+    AJ --> AK[nombre_manques >= 3?]
+    AK -->|Oui| AL[Mettre à jour statut ANNULÉ]
+    AL --> AM[Motif: 3 absences consécutives]
+    AM --> AC
+    AK -->|Non| AN[Remettre en file EN_ATTENTE]
+    AN --> AO[Réinitialiser agent_id et guichet_id]
+    AO --> AP[Repositionner dans file]
+    AP --> K
+    AH -->|Non| K
+                </div>
+                <button class="copy-btn" onclick="copyDiagram('activite')">
+                    📋 Copier le code
+                </button>
+            </div>
+        </div>
+
+        <!-- Diagramme d'États -->
+        <div id="etats" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🔄 Diagramme d'États - Ticket Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+stateDiagram-v2
+    [*] --> EN_ATTENTE : Créer ticket
+    
+    EN_ATTENTE --> APPELÉ : Appeler ticket
+    EN_ATTENTE --> ANNULÉ : Annuler ticket
+    
+    APPELÉ --> PRÉSENT : Client confirme présence
+    APPELÉ --> MANQUÉ : Timeout dépassé
+    APPELÉ --> ANNULÉ : Client absent
+    
+    PRÉSENT --> EN_SERVICE : Démarrer service
+    PRÉSENT --> ANNULÉ : Annuler service
+    
+    EN_SERVICE --> SERVI : Terminer service
+    EN_SERVICE --> ANNULÉ : Annuler service
+    
+    MANQUÉ --> EN_ATTENTE : Réessayer appel
+    MANQUÉ --> ANNULÉ : Limite dépassée
+    
+    SERVI --> [*] : Fin processus
+    ANNULÉ --> [*] : Fin processus
+    
+    note right of EN_ATTENTE : En attente dans la file\nPosition calculée\nPriorité par défaut
+    note right of APPELÉ : Notifié SMS/WebSocket\nTimer timeout démarré\nAgent assigné
+    note right of PRÉSENT : Client confirmé présent\nPrêt pour service\nTimer service démarré
+    note right of EN_SERVICE : Service en cours\nTemps mesuré\nAgent actif
+    note right of MANQUÉ : Client absent\nCompteur tentatives\nMax 3 essais
+    note right of SERVI : Service terminé\nStatistiques mises à jour\nAgent disponible
+    note right of ANNULÉ : Processus terminé\nMotif enregistré\nNettoyage file
+                </div>
+                <button class="copy-btn" onclick="copyDiagram('etats')">
+                    📋 Copier le code
+                </button>
+            </div>
+        </div>
+
+        <!-- Diagramme de Composants -->
+        <div id="composants" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🧩 Diagramme de Composants Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+graph TD
+    subgraph "Interface Frontend"
+        A1[Tableau de bord Agent]
+        A2[Panneau Admin]
+        A3[Affichage Client]
+        A4[Pages Publiques]
+        A5[Application Mobile]
+    end
+    
+    subgraph "Couche API"
+        B1[Routes API]
+        B2[Middleware Authentification]
+        B3[Middleware Entreprise]
+        B4[Validation des Requêtes]
+    end
+    
+    subgraph "Contrôleurs"
+        C1[Contrôleur Agent]
+        C2[Contrôleur Admin]
+        C3[Contrôleur Ticket]
+        C4[Contrôleur Auth]
+        C5[Contrôleur Horaires]
+    end
+    
+    subgraph "Services Métier"
+        D1[Service Ticket]
+        D2[Service Utilisateur]
+        D3[Service Notification]
+        D4[Service Analytics]
+        D5[Service File]
+    end
+    
+    subgraph "Modèles de Données"
+        E1[Modèle Ticket]
+        E2[Modèle Utilisateur]
+        E3[Modèle Entreprise]
+        E4[Modèle Service]
+        E5[Modèle Guichet]
+    end
+    
+    subgraph "Persistance"
+        F1[Base de données MySQL]
+        F2[Cache Redis]
+        F3[Stockage Fichiers]
+        F4[Système de Sauvegarde]
+    end
+    
+    subgraph "Services Externes"
+        G1[Serveur WebSocket]
+        G2[Service SMS Twilio]
+        G3[Service Email]
+        G4[Notifications Push]
+        G5[Worker de Queue]
+    end
+    
+    A1 --> B1
+    A2 --> B1
+    A3 --> B1
+    A4 --> B1
+    A5 --> B1
+    
+    B1 --> B2
+    B2 --> B3
+    B3 --> B4
+    
+    B4 --> C1
+    B4 --> C2
+    B4 --> C3
+    B4 --> C4
+    B4 --> C5
+    
+    C1 --> D1
+    C2 --> D2
+    C3 --> D1
+    C4 --> D2
+    C5 --> D5
+    
+    D1 --> E1
+    D2 --> E2
+    D4 --> E3
+    D3 --> E4
+    D5 --> E5
+    
+    E1 --> F1
+    E2 --> F1
+    E3 --> F1
+    E4 --> F1
+    E5 --> F1
+    
+    D1 --> F2
+    D2 --> F2
+    D4 --> F2
+    
+    D3 --> G1
+    D3 --> G2
+    D3 --> G3
+    D3 --> G4
+    
+    D5 --> G5
+    D4 --> F3
+    F1 --> F4
+                </div>
+                <button class="copy-btn" onclick="copyDiagram('composants')">
+                    📋 Copier le code
+                </button>
+            </div>
+        </div>
+
+        <!-- Diagramme de Communication -->
+        <div id="communication" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    📡 Diagramme de Communication Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+sequenceDiagram
+    participant Client as client
+    participant Agent as agent
+    participant Admin as admin
+    participant SuperAdmin as super_admin
+    participant Application as application
+    participant WebSocket as websocket
+    participant Twilio as twilio
+    participant BaseDeDonnees as base_de_donnees
+    participant Cache as cache
+    
+    Note over client, super_admin: Flux de communication temps réel SmartQueue AI
+    
+    client->>application: Demande ticket
+    application->>base_de_donnees: INSERT ticket
+    application->>websocket: broadcast('ticket.cree')
+    application->>cache: mettreAJourPositionsFile()
+    websocket-->>agent: Nouveau ticket en attente
+    
+    agent->>application: Rappeler ticket
+    application->>base_de_donnees: UPDATE ticket statut
+    application->>twilio: envoyerSMS(notification)
+    application->>websocket: broadcast('ticket.appelle')
+    
+    twilio-->>client: SMS notification
+    websocket-->>client: Notification web temps réel
+    
+    client->>application: Réponse présent
+    application->>base_de_donnees: UPDATE ticket statut
+    application->>websocket: broadcast('ticket.present')
+    websocket-->>agent: Client confirmé présent
+    
+    agent->>application: Service terminé
+    application->>base_de_donnees: UPDATE ticket statut + statistiques
+    application->>cache: mettreAJourStatistiquesAgent()
+    application->>websocket: broadcast('ticket.servi')
+    websocket-->>admin: Statistiques mises à jour en temps réel
+    
+    admin->>application: Configuration service
+    application->>base_de_donnees: UPDATE service parametres
+    application->>cache: invaliderCacheService()
+    application->>websocket: broadcast('parametres.mis_a_jour')
+    websocket-->>agent: Nouvelles configurations
+    
+    super_admin->>application: Maintenance système
+    application->>websocket: broadcast('systeme.maintenance')
+    websocket-->>tous: Notification maintenance
+    
+    Note over client, super_admin: Architecture de communication temps réel avec notifications multi-canaux
+                </div>
+                <button class="copy-btn" onclick="copyDiagram('communication')">
+                    📋 Copier le code
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Cacher tous les contenus
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Désactiver tous les onglets
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Afficher le contenu sélectionné
+            document.getElementById(tabName).classList.add('active');
+            
+            // Activer l'onglet sélectionné
+            const activeTab = Array.from(tabs).find(tab => 
+                tab.getAttribute('onclick').includes(tabName)
+            );
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+        }
+
+        function copyDiagram(diagramId) {
+            const diagramText = document.querySelector(`#${diagramId} .diagram-text`);
+            const textArea = document.createElement('textarea');
+            textArea.value = diagramText.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // Feedback visuel
+            const button = document.querySelector(`#${diagramId} .copy-btn`);
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Copié avec succès!';
+            button.classList.add('copied');
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('copied');
+            }, 3000);
+        }
+
+        // Initialiser au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            showTab('classes');
+        });
+    </script>
+</body>
+
+        <!-- Diagramme de Classes -->
+        <div id="classes" class="tab-content active">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🏗️ Diagramme de Classes Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+classDiagram
+    class Company {
+        -int id
+        -string name
+        -string slug
+        -string logo
+        -string address
+        -string phone
+        -string email
+        -string website
+        -string status
+        -datetime subscription_ends_at
+        -json settings
+        -datetime created_at
+        -datetime updated_at
+        -datetime deleted_at
+        --
+        +services()
+        +users()
+        +counters()
+        +tickets()
+        +workSchedules()
+        +auditLogs()
+        +isActive()
+        +getSettings()
+    }
+
+    class User {
+        -int id
+        -string name
+        -string email
+        -string password
+        -string phone
+        -string avatar
+        -string role
+        -datetime email_verified_at
+        -datetime created_at
+        -datetime updated_at
+        -datetime deleted_at
+        --
+        +companies()
+        +assignedCounters()
+        +tickets()
+        +workSchedules()
+        +auditLogs()
+        +isSuperAdmin()
+        +hasRoleInCompany()
+        +getRoleInCompany()
+    }
+
+    class Ticket {
+        -int id
+        -int company_id
+        -int service_id
+        -int counter_id
+        -int agent_id
+        -string number
+        -int sequence
+        -string status
+        -int priority
+        -string guest_name
+        -string guest_phone
+        -string guest_email
+        -datetime called_at
+        -datetime present_at
+        -datetime served_at
+        -datetime missed_at
+        -datetime cancelled_at
+        -int actual_service_time
+        -int missed_count
+        -string notes
+        -string cancellation_reason
+        -string client_response
+        -datetime client_response_at
+        -string client_response_code
+        -datetime created_at
+        -datetime updated_at
+        -datetime deleted_at
+        --
+        +company()
+        +service()
+        +counter()
+        +agent()
+        +call()
+        +serve()
+        +markAsMissed()
+        +cancel()
+        +getPosition()
+        +getWaitTimeMinutes()
+        +getServiceTimeMinutes()
+        +respondAsComing()
+        +respondAsDelayed()
+        +respondAsNotComing()
+        +isMissedTimeoutExpired()
+    }
+
+    Company "1" -- "*" User : employs
+    Company "1" -- "*" Ticket : has
+    User "1" -- "*" Ticket : handles
+    Ticket "0..1" -- "1" User : handled_by
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagramme de Cas d'Utilisation -->
+        <div id="cas_utilisation" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🎯 Diagramme de Cas d'Utilisation Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+graph TD
+    Client[Client] --> A[Prendre un ticket]
+    Client --> B[Voir statut du ticket]
+    Client --> C[Répondre à l'appel]
+    Client --> D[Recevoir les notifications]
+    
+    Agent[Agent] --> E[Voir tableau de bord agent]
+    Agent --> F[Gérer la file d'attente]
+    Agent --> G[Appeler un ticket]
+    Agent --> H[Servir un ticket]
+    Agent --> I[Marquer comme manqué]
+    Agent --> J[Voir l'historique]
+    Agent --> K[Rappeler un ticket]
+    
+    AdminEntreprise[Admin Entreprise] --> L[Voir tableau de bord admin]
+    AdminEntreprise --> M[Gérer l'entreprise]
+    AdminEntreprise --> N[Gérer les services]
+    AdminEntreprise --> O[Gérer les guichets]
+    AdminEntreprise --> P[Gérer les agents]
+    AdminEntreprise --> Q[Voir les statistiques]
+    AdminEntreprise --> R[Gérer les horaires]
+    AdminEntreprise --> S[Exporter les rapports]
+    
+    SuperAdmin[Super Admin] --> T[Gérer les entreprises globales]
+    SuperAdmin --> U[Voir les analytics globaux]
+    SuperAdmin --> V[Gérer les utilisateurs système]
+    SuperAdmin --> W[Configuration système]
+    
+    A -.-> F
+    G -.-> D
+    H -.-> Q
+    N -.-> O
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagramme de Séquence Authentification -->
+        <div id="sequence_auth" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🔐 Séquence d'Authentification Complète
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+sequenceDiagram
+    participant Utilisateur as utilisateur
+    participant Navigateur as navigateur
+    participant Laravel as laravel
+    participant MiddlewareAuth as middleware_auth
+    participant Database as database
+    participant Session as session
+    
+    utilisateur->>navigateur: Saisit email + mot de passe
+    navigateur->>laravel: POST /login (credentials)
+    laravel->>middleware_auth: Vérifier authentification
+    middleware_auth->>database: SELECT * FROM users WHERE email = ?
+    database-->>middleware_auth: Données utilisateur
+    middleware_auth->>middleware_auth: Vérifier mot de passe (hash)
+    alt Mot de passe correct
+        middleware_auth->>database: Vérifier rôle entreprise
+        database-->>middleware_auth: Rôle et permissions
+        middleware_auth->>session: Créer session utilisateur
+        middleware_auth-->>laravel: Authentification réussie
+        laravel->>database: UPDATE users SET last_login_at = NOW()
+        laravel->>database: INSERT INTO audit_logs (action: login)
+        laravel-->>navigateur: Redirection selon rôle
+        navigateur-->>utilisateur: Affichage dashboard approprié
+    else Mot de passe incorrect
+        middleware_auth-->>laravel: Erreur authentification
+        laravel->>database: INSERT INTO audit_logs (action: login_failed)
+        laravel-->>navigateur: Message d'erreur
+        navigateur-->>utilisateur: Afficher erreur
+    end
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagramme de Séquence Ticket -->
+        <div id="sequence_ticket" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🎫 Séquence de Gestion Ticket Complète
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+sequenceDiagram
+    participant Agent as agent
+    participant Controller as controller
+    participant TicketModel as ticket_model
+    participant Database as database
+    participant WebSocket as websocket
+    participant Twilio as twilio
+    participant Client as client
+    
+    agent->>controller: GET /tickets/waiting
+    controller->>database: SELECT * FROM tickets WHERE status = 'WAITING'
+    database-->>controller: Liste tickets en attente
+    controller-->>agent: Affiche file d'attente
+    
+    agent->>controller: POST /tickets/{id}/recall
+    controller->>ticket_model: find(id)
+    ticket_model->>database: SELECT * FROM tickets WHERE id = ?
+    database-->>ticket_model: Données ticket
+    ticket_model->>database: UPDATE tickets SET status='CALLED', agent_id, called_at=NOW()
+    database-->>ticket_model: Confirmation mise à jour
+    
+    controller->>websocket: broadcast('ticket.called', {ticket_id, agent_id})
+    controller->>twilio: sendSMS(guest_phone, message)
+    controller->>database: INSERT INTO audit_logs (action: recall)
+    controller-->>agent: JSON {success: true}
+    
+    websocket-->>client: Notification temps réel
+    twilio-->>client: SMS notification
+    
+    client->>controller: POST /tickets/{id}/respond (response: 'coming')
+    controller->>ticket_model: find(id)
+    ticket_model->>database: UPDATE tickets SET status='PRESENT', present_at=NOW()
+    controller->>websocket: broadcast('ticket.present')
+    websocket-->>agent: Client présent confirmé
+    
+    agent->>controller: POST /tickets/{id}/serve
+    controller->>ticket_model: markAsServed()
+    ticket_model->>database: UPDATE tickets SET status='SERVED', served_at=NOW(), actual_service_time=?
+    controller->>websocket: broadcast('ticket.served')
+    controller->>database: UPDATE statistics (agent performance)
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagramme d'Activité -->
+        <div id="activite" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    📋 Diagramme d'Activité - Workflow Ticket Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+graph TD
+    A[Début] --> B[Client demande un ticket]
+    B --> C[Vérifier disponibilité du service]
+    C -->|Service non disponible| D[Afficher message indisponible]
+    D --> E[Fin]
+    C -->|Service disponible| F[Générer numéro unique]
+    F --> G[Calculer position en file]
+    G --> H[Créer ticket EN ATTENTE]
+    H --> I[Ajouter à la file d'attente]
+    I --> J[Envoyer confirmation au client]
+    J --> K[Vérifier agent disponible]
+    K -->|Agent disponible| L[Sélectionner prochain ticket]
+    L --> M[Assigner agent et guichet]
+    M --> N[Mettre à jour statut APPELÉ]
+    N --> O[Envoyer notifications]
+    O --> P[Démarrer timer timeout]
+    P --> Q[Client répond?]
+    Q -->|Oui| R[Client présent]
+    R --> S[Mettre à jour statut PRÉSENT]
+    S --> T[Démarrer service]
+    T --> U[Service terminé?]
+    U -->|Non| T
+    U -->|Oui| V[Mettre à jour statut SERVI]
+    V --> W[Mettre à jour statistiques]
+    W --> X[Fin]
+    
+    Q -->|Non| Y[Timeout atteint]
+    Y --> Z[Mettre à jour statut MANQUÉ]
+    Z --> AA[Réessayer appel]
+    AA --> K
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagramme d'États -->
+        <div id="etats" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🔄 Diagramme d'États - Ticket Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+stateDiagram-v2
+    [*] --> EN_ATTENTE : Créer ticket
+    
+    EN_ATTENTE --> APPELÉ : Appeler ticket
+    EN_ATTENTE --> ANNULÉ : Annuler ticket
+    
+    APPELÉ --> PRÉSENT : Client confirme présence
+    APPELÉ --> MANQUÉ : Timeout dépassé
+    APPELÉ --> ANNULÉ : Client absent
+    
+    PRÉSENT --> EN_SERVICE : Démarrer service
+    PRÉSENT --> ANNULÉ : Annuler service
+    
+    EN_SERVICE --> SERVI : Terminer service
+    EN_SERVICE --> ANNULÉ : Annuler service
+    
+    MANQUÉ --> EN_ATTENTE : Réessayer appel
+    MANQUÉ --> ANNULÉ : Limite dépassée
+    
+    SERVI --> [*] : Fin processus
+    ANNULÉ --> [*] : Fin processus
+    
+    note right of EN_ATTENTE : En attente dans la file\nPosition calculée\nPriorité par défaut
+    note right of APPELÉ : Notifié SMS/WebSocket\nTimer timeout démarré\nAgent assigné
+    note right of PRÉSENT : Client confirmé présent\nPrêt pour service\nTimer service démarré
+    note right of EN_SERVICE : Service en cours\nTemps mesuré\nAgent actif
+    note right of MANQUÉ : Client absent\nCompteur tentatives\nMax 3 essais
+    note right of SERVI : Service terminé\nStatistiques mises à jour\nAgent disponible
+    note right of ANNULÉ : Processus terminé\nMotif enregistré\nNettoyage file
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagramme de Composants -->
+        <div id="composants" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    🧩 Diagramme de Composants Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+graph TD
+    A1[Tableau de bord Agent] --> B1[Routes API]
+    A2[Panneau Admin] --> B1
+    A3[Affichage Client] --> B1
+    A4[Pages Publiques] --> B1
+    A5[Application Mobile] --> B1
+    
+    B1 --> B2[Middleware Authentification]
+    B2 --> B3[Middleware Entreprise]
+    B3 --> B4[Validation des Requêtes]
+    
+    B4 --> C1[Contrôleur Agent]
+    B4 --> C2[Contrôleur Admin]
+    B4 --> C3[Contrôleur Ticket]
+    B4 --> C4[Contrôleur Auth]
+    B4 --> C5[Contrôleur Horaires]
+    
+    C1 --> D1[Service Ticket]
+    C2 --> D2[Service Utilisateur]
+    C3 --> D1
+    C4 --> D2
+    C5 --> D5[Service File]
+    
+    D1 --> E1[Modèle Ticket]
+    D2 --> E2[Modèle Utilisateur]
+    D3[Service Notification] --> E3[Modèle Entreprise]
+    D3 --> E4[Modèle Service]
+    D5 --> E5[Modèle Guichet]
+    
+    D4[Service Analytics] --> F1[Base de données MySQL]
+    E1 --> F1
+    E2 --> F1
+    E3 --> F1
+    E4 --> F1
+    E5 --> F1
+    
+    D1 --> F2[Cache Redis]
+    D2 --> F2
+    D4 --> F2
+    
+    D3 --> G1[Serveur WebSocket]
+    D3 --> G2[Service SMS Twilio]
+    D3 --> G3[Service Email]
+    D3 --> G4[Notifications Push]
+    
+    D5 --> G5[Worker de Queue]
+    D4 --> F3[Stockage Fichiers]
+    F1 --> F4[Système de Sauvegarde]
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagramme de Communication -->
+        <div id="communication" class="tab-content">
+            <div class="diagram-container">
+                <div class="diagram-title">
+                    📡 Diagramme de Communication Complet
+                    <span class="status-indicator status-ok"></span>
+                </div>
+                <div class="diagram-text">
+sequenceDiagram
+    participant Client as client
+    participant Agent as agent
+    participant Admin as admin
+    participant SuperAdmin as super_admin
+    participant LaravelApp as laravel_app
+    participant WebSocket as websocket
+    participant Twilio as twilio
+    participant Database as database
+    participant Cache as cache
+    
+    Note over client, super_admin: Flux de communication temps réel
+    
+    client->>laravel_app: Demande ticket
+    laravel_app->>database: INSERT ticket
+    laravel_app->>websocket: broadcast('ticket.created')
+    laravel_app->>cache: update queue positions
+    websocket-->>agent: Nouveau ticket en attente
+    
+    agent->>laravel_app: Rappeler ticket
+    laravel_app->>database: UPDATE ticket status
+    laravel_app->>twilio: sendSMS(notification)
+    laravel_app->>websocket: broadcast('ticket.called')
+    
+    twilio-->>client: SMS notification
+    websocket-->>client: Notification web
+    
+    client->>laravel_app: Réponse présent
+    laravel_app->>database: UPDATE ticket status
+    laravel_app->>websocket: broadcast('ticket.present')
+    websocket-->>agent: Client confirmé présent
+    
+    agent->>laravel_app: Service terminé
+    laravel_app->>database: UPDATE ticket status + stats
+    laravel_app->>cache: update agent statistics
+    laravel_app->>websocket: broadcast('ticket.served')
+    websocket-->>admin: Statistiques mises à jour
+    
+    admin->>laravel_app: Configuration service
+    laravel_app->>database: UPDATE service settings
+    laravel_app->>cache: invalidate service cache
+    laravel_app->>websocket: broadcast('settings.updated')
+    websocket-->>agent: Nouvelles configurations
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-message">
+        <strong>💡 Information :</strong> Cette version offline affiche les diagrammes en format texte Mermaid.
+        Pour une visualisation graphique, copiez le code et collez-le dans <a href="https://mermaid.live" target="_blank">Mermaid Live</a>.
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Cacher tous les contenus
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Désactiver tous les onglets
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Afficher le contenu sélectionné
+            document.getElementById(tabName).classList.add('active');
+            
+            // Activer l'onglet sélectionné
+            const activeTab = Array.from(tabs).find(tab => 
+                tab.getAttribute('onclick').includes(tabName)
+            );
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+        }
+
+        // Fonction pour copier le code
+        function copyCode(button) {
+            const diagramText = button.closest('.diagram-container').querySelector('.diagram-text');
+            const textArea = document.createElement('textarea');
+            textArea.value = diagramText.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // Feedback visuel
+            const originalText = button.textContent;
+            button.textContent = '✅ Copié!';
+            button.style.background = '#10b981';
+            button.style.color = 'white';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '';
+                button.style.color = '';
+            }, 2000);
+        }
+
+        // Ajouter des boutons de copie
+        document.addEventListener('DOMContentLoaded', function() {
+            const containers = document.querySelectorAll('.diagram-container');
+            containers.forEach(container => {
+                const button = document.createElement('button');
+                button.textContent = '📋 Copier le code';
+                button.style.cssText = `
+                    margin-top: 15px;
+                    padding: 10px 20px;
+                    background: #4f46e5;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                `;
+                button.onclick = function() { copyCode(this); };
+                container.appendChild(button);
+            });
+        });
+    </script>
+</body>
+</html>
