@@ -31,8 +31,8 @@
         }
         
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            0%, 100% { transform: translateY(0); opacity: 1; }
+            50% { transform: translateY(-2px); opacity: 0.8; }
         }
         
         @keyframes shake {

@@ -12,15 +12,18 @@ use App\Models\Company;
 use App\Models\Service;
 use App\Models\Ticket;
 use App\Services\TicketService;
+use App\Services\QueueNotificationService;
 use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
     protected TicketService $ticketService;
+    protected QueueNotificationService $notificationService;
 
-    public function __construct(TicketService $ticketService)
+    public function __construct(TicketService $ticketService, QueueNotificationService $notificationService)
     {
         $this->ticketService = $ticketService;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -63,6 +66,11 @@ class TicketController extends Controller
         try {
             $data = $request->only(['client_name', 'client_phone', 'client_email', 'priority']);
             $ticket = $this->ticketService->createTicket($service, $data);
+
+            // Activer les notifications progressives si le client a fourni un contact
+            if ($ticket->guest_phone || $ticket->guest_email) {
+                $this->notificationService->enableProgressiveNotifications($ticket);
+            }
 
             return redirect()->route('tickets.track', [$company, $ticket])
                 ->with('success', 'Ticket ' . $ticket->number . ' créé avec succès !');
@@ -212,6 +220,9 @@ class TicketController extends Controller
             if ($ticket) {
                 // Déclencher l'event d'appel
                 event(new TicketCalled($ticket));
+                
+                // Envoyer la notification progressive d'appel
+                $this->notificationService->sendCalledNotification($ticket);
                 
                 // Mettre à jour les positions dans la queue
                 $this->updateQueuePositions($ticket);

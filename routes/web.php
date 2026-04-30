@@ -205,6 +205,37 @@ Route::post('/api/client/tickets/{ticket}/respond', function (App\Models\Ticket 
 })->name('api.client.tickets.respond');
 
 
+// Page de suivi à distance améliorée
+Route::get('/ticket/{ticket}/remote-tracking', function (App\Models\Ticket $ticket, Request $request) {
+    try {
+        // Vérifier l'accès par code de réponse ou par email/téléphone
+        $responseCode = $request->input('code');
+        $email = $request->input('email');
+        $phone = $request->input('phone');
+        
+        $hasAccess = false;
+        
+        if ($responseCode && $ticket->client_response_code === $responseCode) {
+            $hasAccess = true;
+        } elseif ($email && $ticket->guest_email === $email) {
+            $hasAccess = true;
+        } elseif ($phone && $ticket->guest_phone === $phone) {
+            $hasAccess = true;
+        }
+        
+        if (!$hasAccess) {
+            return response()->view('errors.403', [], 403);
+        }
+        
+        return view('client.remote-tracking', compact('ticket'));
+        
+    } catch (\Exception $e) {
+        return response()->view('errors.500', [
+            'error' => $e->getMessage()
+        ], 500);
+    }
+})->name('ticket.remote-tracking');
+
 // Page de réponse client (publique)
 Route::get('/ticket/{ticket}/respond', function (App\Models\Ticket $ticket, Request $request) {
     try {
@@ -262,52 +293,100 @@ Route::get('/client/ticket', function () {
  
 // Create ticket route
 Route::post('/ticket/{company}', function (\App\Models\Company $company, \Illuminate\Http\Request $request) {
-    $validated = $request->validate([
-        'service'  => 'required|exists:services,id',
-        'name'     => 'required|string|max:255',
-        'phone'    => 'nullable|string|max:20',
-        'email'    => 'nullable|email|max:255',
-        'priority' => 'required|in:normal,urgent,vip',
-    ]);
- 
-    $service = \App\Models\Service::find($validated['service']);
- 
-    $counter = \App\Models\Counter::where('service_id', $service->id)
-        ->where('company_id', $company->id)
-        ->where('status', 'closed')
-        ->first();
- 
-    if (!$counter) {
+    try {
+        // Validation des données
+        $validated = $request->validate([
+            'service'  => 'required|exists:services,id',
+            'name'     => 'required|string|max:255',
+            'phone'    => 'nullable|string|max:20',
+            'email'    => 'nullable|email|max:255',
+            'priority' => 'required|in:normal,urgent,vip',
+        ]);
+
+        // Vérification du service
+        $service = \App\Models\Service::find($validated['service']);
+        if (!$service) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Service non trouvé'
+            ], 404);
+        }
+
+        // Vérification que le service appartient à l'entreprise
+        if ($service->company_id !== $company->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ce service n\'appartient pas à cette entreprise'
+            ], 400);
+        }
+
+        // Recherche d'un compteur disponible
         $counter = \App\Models\Counter::where('service_id', $service->id)
             ->where('company_id', $company->id)
+            ->where('status', 'closed')
             ->first();
+
+        if (!$counter) {
+            $counter = \App\Models\Counter::where('service_id', $service->id)
+                ->where('company_id', $company->id)
+                ->first();
+        }
+
+        // Génération du numéro de ticket
+        $todayTickets = \App\Models\Ticket::whereDate('created_at', today())
+            ->where('company_id', $company->id)
+            ->count();
+        $ticketNumber = $service->prefix . str_pad($todayTickets + 1, 3, '0', STR_PAD_LEFT);
+
+        // Création du ticket
+        $ticket = \App\Models\Ticket::create([
+            'company_id'   => $company->id,
+            'service_id'   => $service->id,
+            'counter_id'   => $counter ? $counter->id : null,
+            'number'       => $ticketNumber,
+            'guest_name'   => $validated['name'],
+            'guest_phone'  => $validated['phone'],
+            'guest_email'  => $validated['email'] ?? null,
+            'priority'     => $validated['priority'],
+            'status'       => 'WAITING',
+            'created_at'   => now(),
+        ]);
+
+        if (!$ticket) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la création du ticket'
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'ticket'  => [
+                'id'             => $ticket->id,
+                'number'         => $ticket->number,
+                'service'        => $service->name,
+                'priority'       => $ticket->priority,
+                'counter'        => $counter ? $counter->name : null,
+                'estimated_time' => $service->estimated_service_time ?? 15,
+            ],
+        ]);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur de validation',
+            'errors' => $e->errors()
+        ], 422);
+    } catch (\Exception $e) {
+        \Log::error('Erreur lors de la création du ticket: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la génération du ticket. Veuillez réessayer.',
+            'debug' => config('app.debug') ? $e->getMessage() : null
+        ], 500);
     }
- 
-    $todayTickets = \App\Models\Ticket::whereDate('created_at', today())->count();
-    $ticketNumber = $service->prefix . str_pad($todayTickets + 1, 3, '0', STR_PAD_LEFT);
- 
-    $ticket = \App\Models\Ticket::create([
-        'company_id'   => $company->id,
-        'service_id'   => $service->id,
-        'counter_id'   => $counter ? $counter->id : null,
-        'number'       => $ticketNumber,
-        'guest_name'   => $validated['name'],
-        'guest_phone'  => $validated['phone'],
-        'priority'     => $validated['priority'],
-        'status'       => 'WAITING',
-        'created_at'   => now(),
-    ]);
- 
-    return response()->json([
-        'success' => true,
-        'ticket'  => [
-            'number'         => $ticket->number,
-            'service'        => $service->name,
-            'priority'       => $ticket->priority,
-            'counter'        => $counter ? $counter->name : null,
-            'estimated_time' => $service->estimated_service_time ?? 15,
-        ],
-    ]);
 })->name('ticket.create');
  
  
@@ -579,6 +658,7 @@ Route::middleware(['auth', 'belongs.to.company'])->group(function () {
             Route::get('/counter/{counter}', [AgentController::class, 'counter'])->name('counter');
             Route::get('/service/{service}', [AgentController::class, 'service'])->name('service');
             Route::get('/service/all', [AgentController::class, 'allServices'])->name('service.all');
+            Route::get('/all-services', [AgentController::class, 'allServices'])->name('all-services');
             Route::get('/history', [AgentController::class, 'history'])->name('history');
  
             // Actions tickets

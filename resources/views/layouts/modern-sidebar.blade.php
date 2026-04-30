@@ -76,7 +76,7 @@
         
         .toggle-btn:hover {
             background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
+            transform: translateY(-2px);
         }
         
         .sidebar-nav {

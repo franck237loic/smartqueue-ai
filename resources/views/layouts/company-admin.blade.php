@@ -84,7 +84,7 @@
         
         .sidebar-link:hover svg,
         .sidebar-link.active svg {
-            transform: scale(1.1);
+            transform: translateY(-2px);
         }
         
         /* Card shadow with glow */

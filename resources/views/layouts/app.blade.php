@@ -83,7 +83,7 @@
         .hover\:bg-gray-50:hover { background-color: #F9FAFB; }
         .hover\:border-gray-300:hover { border-color: #D1D5DB; }
         .hover\:opacity-90:hover { opacity: 0.9; }
-        .hover\:scale-\[1\.02\]:hover { transform: scale(1.02); }
+        .hover\:scale-\[1\.02\]:hover { transform: translateY(-2px); }
         .hover\:-translate-y-1:hover { transform: translateY(-4px); }
         .hover\:shadow-lg:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .hover\:bg-gray-100:hover { background-color: #F3F4F6; }
