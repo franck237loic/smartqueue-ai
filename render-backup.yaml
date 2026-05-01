@@ -1,28 +1,30 @@
 services:
+  # Service web principal
   - type: web
     name: smartqueue-ai
     env: php
     plan: free
     runtime: php
-    
-    # Build SANS npm - Composer seulement
     buildCommand: |
       composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
-    
-    # Démarrage simple
+      php artisan config:cache
     startCommand: |
-      php artisan serve --host=0.0.0.0 --port=$PORT
+      php artisan serve --host=0.0.0.0 --port=$PORT --timeout=300
     
-    # Health check simple
-    healthCheckPath: /minimal
-    healthCheckTimeout: 15
+    # Health check pour vérifier que l'appli fonctionne
+    healthCheckPath: /health
+    healthCheckTimeout: 30
     
-    # Variables essentielles
+    # Variables d'environnement
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
+      - key: APP_LOG_LEVEL
+        value: error
+      - key: APP_URL
+        value: https://smartqueue-ai.onrender.com
       - key: APP_KEY
         generateValue: true
       - key: DB_CONNECTION
@@ -43,7 +45,18 @@ services:
         fromDatabase:
           name: smartqueue-db
           property: password
+      - key: DB_PORT
+        value: "5432"
+      - key: CACHE_DRIVER
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: FILESYSTEM_DISK
+        value: public
 
+# Base de données PostgreSQL gratuite
 databases:
   - name: smartqueue-db
     databaseName: smart_queue_ai
