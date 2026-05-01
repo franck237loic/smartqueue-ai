@@ -727,6 +727,24 @@ Route::middleware(['auth'])->prefix('tickets')->group(function () {
  
 /*
 |--------------------------------------------------------------------------
+| Debug Route
+|--------------------------------------------------------------------------
+*/
+Route::get('/debug', function () {
+    return response()->json([
+        'status' => 'debug',
+        'timestamp' => now()->toISOString(),
+        'service' => 'SmartQueue AI',
+        'php_version' => PHP_VERSION,
+        'laravel_version' => app()->version(),
+        'env' => app()->environment(),
+        'database_connection' => config('database.default'),
+        'database_host' => config('database.connections.pgsql.host'),
+    ], 200);
+});
+
+/*
+|--------------------------------------------------------------------------
 | Health Check Route
 |--------------------------------------------------------------------------
 */
