@@ -361,16 +361,20 @@
     <script>
         function toggleCompanyDropdown() {
             const dropdown = document.getElementById('companyDropdown');
-            dropdown.classList.toggle('hidden');
+            if (dropdown) {
+                dropdown.classList.toggle('hidden');
+            }
         }
 
         // Fermer le dropdown quand on clique ailleurs
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('companyDropdown');
-            const button = event.target.closest('button[onclick="toggleCompanyDropdown()"]');
-            
-            if (!button && dropdown && dropdown.contains && !dropdown.contains(event.target)) {
-                dropdown.classList.add('hidden');
+            if (dropdown) {
+                const button = event.target.closest('button[onclick="toggleCompanyDropdown()"]');
+                
+                if (!button && dropdown && dropdown.contains && !dropdown.contains(event.target)) {
+                    dropdown.classList.add('hidden');
+                }
             }
         });
     </script>
