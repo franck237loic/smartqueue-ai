@@ -1,0 +1,146 @@
+<?php $__env->startSection('title', 'Gestion - ' . $queue->name); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="space-y-6 animate-fade-in" x-data="agentQueue()">
+    <div class="flex items-center justify-between">
+        <div>
+            <a href="<?php echo e(route('agent.dashboard')); ?>" class="text-gray-500 hover:text-primary transition text-sm inline-flex items-center gap-2 mb-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Retour aux files
+            </a>
+            <h1 class="text-3xl font-bold text-text"><?php echo e($queue->name); ?></h1>
+        </div>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium <?php echo e($queue->isActive() ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'); ?>">
+            <?php echo e($queue->isActive() ? 'Active' : 'Inactive'); ?>
+
+        </span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <?php if($current): ?>
+                <div class="bg-gradient-to-r from-primary to-blue-600 rounded-2xl p-8 text-white card-shadow">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <p class="text-blue-100 text-sm mb-1">TICKET EN APPEL</p>
+                            <h2 class="text-5xl font-bold font-display"><?php echo e($current->number); ?></h2>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-blue-100 text-sm">Appelé à</p>
+                            <p class="text-xl font-semibold"><?php echo e($current->called_at->format('H:i')); ?></p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <form method="POST" action="<?php echo e(route('agent.serve', $current)); ?>" class="flex-1">
+                            <?php echo csrf_field(); ?>
+                            <button type="submit" class="w-full py-3 px-4 rounded-xl bg-white text-primary font-semibold hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Marquer servi
+                            </button>
+                        </form>
+                        <form method="POST" action="<?php echo e(route('agent.missed', $current)); ?>" class="flex-1">
+                            <?php echo csrf_field(); ?>
+                            <button type="submit" class="w-full py-3 px-4 rounded-xl bg-white/20 text-white font-semibold hover:bg-white/30 transition flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                Absent
+                            </button>
+                        </form>
+                        <form method="POST" action="<?php echo e(route('agent.recall', $current)); ?>" class="flex-1">
+                            <?php echo csrf_field(); ?>
+                            <button type="submit" class="w-full py-3 px-4 rounded-xl bg-white/20 text-white font-semibold hover:bg-white/30 transition flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                </svg>
+                                Rappeler
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="bg-white rounded-2xl card-shadow p-8 text-center">
+                    <p class="text-gray-500 mb-6">Aucun ticket en cours d'appel</p>
+                    <form method="POST" action="<?php echo e(route('agent.call', $queue)); ?>" class="max-w-xs mx-auto">
+                        <?php echo csrf_field(); ?>
+                        <button type="submit" class="w-full py-4 px-6 rounded-xl gradient-primary text-white font-semibold text-lg hover:opacity-90 transition transform hover:scale-[1.02] flex items-center justify-center gap-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            Appeler le suivant
+                        </button>
+                    </form>
+                </div>
+            <?php endif; ?>
+
+            <?php if($waiting->count() > 0): ?>
+                <div class="bg-white rounded-2xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-text flex items-center gap-2">
+                            <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Tickets en attente (<?php echo e($waiting->count()); ?>)
+                        </h3>
+                    </div>
+                    <div class="space-y-2 max-h-96 overflow-y-auto">
+                        <?php $__currentLoopData = $waiting; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ticket): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <div class="flex items-center gap-4">
+                                    <span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-600">
+                                        <?php echo e($loop->iteration); ?>
+
+                                    </span>
+                                    <span class="text-xl font-bold text-text"><?php echo e($ticket->number); ?></span>
+                                    <span class="text-gray-500 text-sm"><?php echo e($ticket->client_name ?? 'Anonyme'); ?></span>
+                                </div>
+                                <span class="text-sm text-gray-400"><?php echo e($ticket->created_at->format('H:i')); ?></span>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl card-shadow p-6">
+                <h3 class="text-lg font-semibold text-text mb-4">Statistiques</h3>
+                <div class="space-y-4">
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-gray-500 text-sm">En attente</p>
+                        <p class="text-3xl font-bold text-text"><?php echo e($waiting->count()); ?></p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-gray-500 text-sm">En appel</p>
+                        <p class="text-3xl font-bold text-text"><?php echo e($called->count()); ?></p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-gray-500 text-sm">Temps moyen</p>
+                        <p class="text-3xl font-bold text-text"><?php echo e($queue->estimated_service_time); ?> min</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php $__env->startPush('scripts'); ?>
+<script>
+    function agentQueue() {
+        return {
+            init() {
+                setInterval(() => {
+                    window.location.reload();
+                }, 10000);
+            }
+        }
+    }
+</script>
+<?php $__env->stopPush(); ?>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\FurtherMarket\smartqueue-ai\resources\views\agent\queue.blade.php ENDPATH**/ ?>

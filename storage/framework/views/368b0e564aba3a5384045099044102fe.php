@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Prise de Ticket - {{ $company->name }} | SmartQueue AI</title>
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title>Prise de Ticket - <?php echo e($company->name); ?> | SmartQueue AI</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -647,16 +647,16 @@
     <nav class="navbar">
         <div class="container">
             <div class="flex justify-between items-center py-4">
-                <a href="{{ route('welcome') }}" class="navbar-brand">
+                <a href="<?php echo e(route('welcome')); ?>" class="navbar-brand">
                     <div class="navbar-logo">SQ</div>
                     <span>SmartQueue AI</span>
                 </a>
                 
                 <div class="navbar-nav">
-                    <a href="{{ route('companies.index') }}" class="nav-link">
+                    <a href="<?php echo e(route('companies.index')); ?>" class="nav-link">
                         Entreprises
                     </a>
-                    <a href="{{ route('login') }}" class="btn btn-primary">
+                    <a href="<?php echo e(route('login')); ?>" class="btn btn-primary">
                         Connexion
                     </a>
                 </div>
@@ -671,7 +671,7 @@
             <div class="ticket-card animate-fade-in">
                 <!-- Header -->
                 <div class="ticket-header">
-                    <h1 class="company-name">{{ $company->name }}</h1>
+                    <h1 class="company-name"><?php echo e($company->name); ?></h1>
                     <h2 class="ticket-title">Prise de Ticket</h2>
                     <p class="ticket-subtitle">Sélectionnez votre service et obtenez votre ticket numérique</p>
                 </div>
@@ -711,9 +711,9 @@
                         <label class="form-label" for="service">Service *</label>
                         <select class="form-select" id="service" name="service" required>
                             <option value="">Sélectionnez un service</option>
-                            @foreach($company->services as $service)
-                                <option value="{{ $service->id }}">{{ $service->name }}</option>
-                            @endforeach
+                            <?php $__currentLoopData = $company->services; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $service): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($service->id); ?>"><?php echo e($service->name); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
                     
@@ -748,7 +748,7 @@
                             </svg>
                             Prendre mon ticket
                         </button>
-                        <a href="{{ route('companies.index') }}" class="btn btn-secondary btn-lg">
+                        <a href="<?php echo e(route('companies.index')); ?>" class="btn btn-secondary btn-lg">
                             Retour
                         </a>
                     </div>
@@ -776,7 +776,7 @@
             
             try {
                 // Submit to server
-                const response = await fetch(`/ticket/{{ $company->id }}`, {
+                const response = await fetch(`/ticket/<?php echo e($company->id); ?>`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -819,7 +819,7 @@
         
         // Generate ticket number based on service and priority
         function generateTicketNumber(serviceId, priority) {
-            const services = @json($company->services);
+            const services = <?php echo json_encode($company->services, 15, 512) ?>;
             const service = services.find(s => s.id == serviceId);
             const prefix = service ? service.prefix : 'A';
             
@@ -906,3 +906,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH C:\Users\FurtherMarket\smartqueue-ai\resources\views\pages\ticket.blade.php ENDPATH**/ ?>
