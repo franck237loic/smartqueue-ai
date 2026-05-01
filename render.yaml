@@ -7,8 +7,8 @@ services:
     runtime: php
     buildCommand: |
       composer install --no-dev --optimize-autoloader --no-interaction
-      npm ci --production
-      npm run build
+      npm install
+      npm run prod
       php artisan config:cache
       php artisan route:cache
       php artisan view:cache
