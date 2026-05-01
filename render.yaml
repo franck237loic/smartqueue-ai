@@ -9,7 +9,7 @@ services:
       composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
       php artisan config:cache
     startCommand: |
-      php artisan serve --host=0.0.0.0 --port=$PORT
+      php artisan serve --host=0.0.0.0 --port=$PORT --timeout=300
     
     # Health check pour vérifier que l'appli fonctionne
     healthCheckPath: /health
