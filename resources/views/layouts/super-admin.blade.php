@@ -6,228 +6,490 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Super Admin') | SmartQueue AI</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        
-        :root {
-            --brand-500: #3b82f6;
-            --brand-600: #2563eb;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        body { 
+
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #6366F1;
+            --secondary: #06B6D4;
+            --accent: #8B5CF6;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --dark: #1F2937;
+            --darker: #111827;
+            --light: #F9FAFB;
+            --lighter: #FFFFFF;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+        }
+
+        body {
             font-family: 'Inter', sans-serif;
-            background: #030712;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--darker);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1.5rem 0;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-title {
+            padding: 0 2rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray-400);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 2rem;
+            color: var(--gray-300);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--primary);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(79, 70, 229, 0.1);
+            color: white;
+            padding-left: 2.5rem;
+        }
+
+        .nav-item:hover::before {
+            transform: translateX(0);
+        }
+
+        .nav-item.active {
+            background: rgba(79, 70, 229, 0.2);
+            color: white;
+            padding-left: 2.5rem;
+        }
+
+        .nav-item.active::before {
+            transform: translateX(0);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
             color: white;
         }
-        
-        .sidebar-link { @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200; }
-        .sidebar-link:hover { @apply bg-white/10 text-white transform translate-x-1; }
-        .sidebar-link.active { @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-600/40 transform scale-105; }
-        .card-shadow { @apply shadow-2xl shadow-black/10 border border-gray-800/50 hover:shadow-3xl hover:shadow-blue-600/10 transition-all duration-300; }
-        .glass { @apply bg-gray-900/90 backdrop-blur-2xl border border-white/10; }
-        .gradient-text { @apply bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent; }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.1rem;
         }
-        
-        .stat-card {
-            @apply relative overflow-hidden;
-            background: linear-gradient(135deg, rgba(17, 24, 39, 0.9) 0%, rgba(31, 41, 55, 0.9) 100%);
+
+        .user-info {
+            flex: 1;
         }
-        
-        .stat-card::before {
-            content: '';
-            @apply absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
         }
-        
-        .btn-primary {
-            @apply relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white;
-            transition: all 0.3s ease;
+
+        .user-email {
+            font-size: 0.8rem;
+            opacity: 0.7;
         }
-        
-        .btn-primary::before {
-            content: '';
-            @apply absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 hover:opacity-100 transition-opacity duration-300;
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            background: var(--light);
         }
-        
-        .btn-primary:hover {
-            @apply transform scale-105 shadow-2xl shadow-blue-600/40;
+
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        
-        /* Custom dark theme colors */
-        .bg-dark-900 { background-color: #030712; }
-        .bg-dark-800 { background-color: #111827; }
-        .bg-dark-700 { background-color: #1f2937; }
-        .text-dark-600 { color: #4b5563; }
-        .border-dark-700 { border-color: #374151; }
-        .border-dark-600 { border-color: #4b5563; }
-        .bg-brand-500 { background-color: #3b82f6; }
-        .bg-brand-600 { background-color: #2563eb; }
-        .text-brand-500 { color: #3b82f6; }
-        .shadow-brand-600 { box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3); }
+
+        .header-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .header-subtitle {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-badge {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+            color: #065F46;
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+            color: #991B1B;
+            border-left: 4px solid var(--error);
+        }
+
+        .alert-icon {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
     </style>
 </head>
-<body class="bg-dark-900 text-white">
-    <div class="flex h-screen">
-        <!-- Sidebar Modern -->
-        <aside class="w-72 bg-gradient-to-b from-gray-900 via-gray-900 to-black backdrop-blur-xl border-r border-white/5 flex flex-col fixed h-full z-20 shadow-2xl shadow-black/30" x-data="{ sidebarOpen: true }">
-            <!-- Logo Section -->
-            <div class="p-6 border-b border-white/5">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/40 ring-2 ring-white/20 animate-pulse-slow">
-                        <svg class="w-7 h-7 text-white animate-float" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div class="logo-text">SmartQueue</div>
+            </a>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-title">Menu Principal</div>
+                <a href="{{ route('super_admin.dashboard') }}" class="nav-item {{ request()->routeIs('super_admin.dashboard') ? 'active' : '' }}">
+                    <div class="nav-icon">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
                         </svg>
                     </div>
-                    <div>
-                        <h1 class="font-bold text-lg gradient-text tracking-tight">SmartQueue</h1>
-                        <div class="flex items-center gap-2 mt-0.5">
-                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                            <p class="text-xs text-gray-500 font-medium">Super Admin</p>
-                        </div>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="{{ route('super_admin.companies') }}" class="nav-item {{ request()->routeIs('super_admin.companies*') ? 'active' : '' }}">
+                    <div class="nav-icon">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
                     </div>
-                </div>
+                    <span>Entreprises</span>
+                    @php
+                        $companiesCount = \App\Models\Company::count();
+                    @endphp
+                    @if($companiesCount > 0)
+                        <span class="nav-badge">{{ $companiesCount }}</span>
+                    @endif
+                </a>
+                
+                <a href="{{ route('super_admin.users') }}" class="nav-item {{ request()->routeIs('super_admin.users*') ? 'active' : '' }}">
+                    <div class="nav-icon">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                    <span>Utilisateurs</span>
+                </a>
             </div>
-
-            <!-- Main Navigation -->
-            <nav class="flex-1 px-4 py-6 overflow-y-auto">
-                <div class="space-y-2">
-                    <p class="px-4 text-xs font-semibold text-dark-600 uppercase tracking-wider mb-3">Menu Principal</p>
-                    
-                    <a href="{{ route('super_admin.dashboard') }}" class="group flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 {{ request()->routeIs('super_admin.dashboard') ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-600/25' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}">
-                        <div class="w-9 h-9 rounded-lg {{ request()->routeIs('super_admin.dashboard') ? 'bg-white/20' : 'bg-blue-500/10 group-hover:bg-blue-500/20' }} flex items-center justify-center transition-all">
-                            <svg class="w-5 h-5 {{ request()->routeIs('super_admin.dashboard') ? 'text-white' : 'text-blue-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            
+            <div class="nav-section">
+                <div class="nav-title">Système</div>
+                <a href="{{ route('super_admin.statistics') }}" class="nav-item {{ request()->routeIs('super_admin.statistics') ? 'active' : '' }}">
+                    <div class="nav-icon">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <span>Statistiques</span>
+                </a>
+                
+                <a href="{{ route('super_admin.settings') }}" class="nav-item {{ request()->routeIs('super_admin.settings') ? 'active' : '' }}">
+                    <div class="nav-icon">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <span>Paramètres</span>
+                </a>
+                
+                <a href="{{ route('super_admin.administrators') }}" class="nav-item {{ request()->routeIs('super_admin.administrators*') ? 'active' : '' }}">
+                    <div class="nav-icon">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </div>
+                    <span>Administrateurs</span>
+                </a>
+                
+                <a href="{{ route('welcome') }}" class="nav-item">
+                    <div class="nav-icon">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </div>
+                    <span>Page d'accueil</span>
+                </a>
+                
+                <form action="{{ route('logout') }}" method="POST" class="block">
+                    @csrf
+                    <button type="submit" class="nav-item" style="background: none; border: none; width: 100%; text-align: left; cursor: pointer;">
+                        <div class="nav-icon">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                             </svg>
                         </div>
-                        <span>Dashboard</span>
-                    </a>
-
-                    <a href="{{ route('super_admin.companies') }}" class="group flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 {{ request()->routeIs('super_admin.companies*') ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/25' : 'text-dark-600 hover:bg-white/5 hover:text-white' }}">
-                        <div class="w-9 h-9 rounded-lg {{ request()->routeIs('super_admin.companies*') ? 'bg-white/20' : 'bg-green-500/10 group-hover:bg-green-500/20' }} flex items-center justify-center transition-all">
-                            <svg class="w-5 h-5 {{ request()->routeIs('super_admin.companies*') ? 'text-white' : 'text-green-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                            </svg>
-                        </div>
-                        <span>Entreprises</span>
-                        @php
-                            $companiesCount = \App\Models\Company::count();
-                        @endphp
-                        @if($companiesCount > 0)
-                            <span class="ml-auto bg-brand-600 text-white px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm">{{ $companiesCount }}</span>
-                        @endif
-                    </a>
-
-                    <a href="{{ route('super_admin.users') }}" class="group flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 {{ request()->routeIs('super_admin.users*') ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/25' : 'text-dark-600 hover:bg-white/5 hover:text-white' }}">
-                        <div class="w-9 h-9 rounded-lg {{ request()->routeIs('super_admin.users*') ? 'bg-white/20' : 'bg-purple-500/10 group-hover:bg-purple-500/20' }} flex items-center justify-center transition-all">
-                            <svg class="w-5 h-5 {{ request()->routeIs('super_admin.users*') ? 'text-white' : 'text-purple-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                        </div>
-                        <span>Utilisateurs</span>
-                    </a>
-                </div>
-
-                <!-- System Section -->
-                <div class="mt-8 pt-6 border-t border-white/5">
-                    <p class="px-4 text-xs font-semibold text-dark-600 uppercase tracking-wider mb-3">Système</p>
-                    
-                    <div class="space-y-1">
-                        <a href="{{ route('welcome') }}" class="group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-dark-600 hover:bg-white/5 hover:text-white transition-all duration-300">
-                            <div class="w-9 h-9 rounded-lg bg-dark-700/50 group-hover:bg-dark-600 flex items-center justify-center transition-all">
-                                <svg class="w-5 h-5 text-dark-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                                </svg>
-                            </div>
-                            <span>Page d'accueil</span>
-                        </a>
-
-                        <form action="{{ route('logout') }}" method="POST" class="block">
-                            @csrf
-                            <button type="submit" class="group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-300">
-                                <div class="w-9 h-9 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-all">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                                    </svg>
-                                </div>
-                                <span>Déconnexion</span>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </nav>
-
-            <!-- User Profile Card -->
-            <div class="p-4 m-4 bg-gradient-to-br from-dark-700/60 via-purple-900/20 to-dark-800/60 rounded-2xl border border-white/10 backdrop-blur-xl hover:border-white/20 transition-all duration-300">
-                <div class="flex items-center gap-3">
-                    <div class="relative">
-                        <div class="w-11 h-11 bg-gradient-to-br from-brand-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-brand-600/40 ring-2 ring-white/20">
-                            {{ substr(auth()->user()->name, 0, 1) }}
-                        </div>
-                        <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-gradient-to-br from-green-400 to-green-500 rounded-full border-2 border-dark-800 animate-pulse"></div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-dark-600 truncate">{{ auth()->user()->email }}</p>
-                    </div>
-                    <a href="#" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                        <svg class="w-4 h-4 text-dark-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                    </a>
-                </div>
+                        <span>Déconnexion</span>
+                    </button>
+                </form>
             </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="flex-1 ml-72 overflow-y-auto bg-dark-900">
-            <!-- Top Bar -->
-            <header class="bg-dark-800 border-b border-dark-700 sticky top-0 z-10">
-                <div class="flex items-center justify-between px-8 py-4">
-                    <div>
-                        <h2 class="text-xl font-semibold text-white">@yield('title', 'Dashboard')</h2>
-                        <p class="text-sm text-dark-600">{{ now()->format('l d F Y') }}</p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <div class="relative">
-                            <span class="px-4 py-2 bg-gradient-to-r from-brand-600 via-purple-600 to-pink-600 text-white rounded-full text-sm font-bold shadow-lg shadow-brand-600/40 animate-pulse-slow">
-                                Super Admin
-                            </span>
-                            <div class="absolute inset-0 bg-gradient-to-r from-brand-600 via-purple-600 to-pink-600 rounded-full blur-lg opacity-50 animate-pulse"></div>
-                        </div>
-                    </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="{{ route('super_admin.profile') }}" class="user-profile" style="text-decoration: none; color: white;">
+                <div class="user-avatar">
+                    {{ substr(auth()->user()->name, 0, 1) }}
                 </div>
-            </header>
-
-            <!-- Content -->
-            <div class="p-8">
-                @if(session('success'))
-                    <div class="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl flex items-center gap-3">
-                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <p class="text-green-400">{{ session('success') }}</p>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3">
-                        <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <p class="text-red-400">{{ session('error') }}</p>
-                    </div>
-                @endif
-
-                @yield('content')
+                <div class="user-info">
+                    <div class="user-name">{{ auth()->user()->name }}</div>
+                    <div class="user-email">{{ auth()->user()->email }}</div>
+                </div>
+            </a>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <header class="header">
+            <div>
+                <h1 class="header-title">@yield('title', 'Dashboard')</h1>
+                <p class="header-subtitle">{{ now()->format('l d F Y') }}</p>
             </div>
-        </main>
+            <div class="header-actions">
+                <div class="header-badge">Super Admin</div>
+            </div>
+        </header>
+        
+        <div class="content">
+            @if(session('success'))
+                <div class="alert alert-success">
+                    <div class="alert-icon">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>{{ session('success') }}</div>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-error">
+                    <div class="alert-icon">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>{{ session('error') }}</div>
+                </div>
+            @endif
+
+            @yield('content')
+        </div>
     </div>
 </body>
 </html>

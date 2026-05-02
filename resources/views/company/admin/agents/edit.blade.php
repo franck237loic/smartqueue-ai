@@ -1,250 +1,770 @@
-@extends('layouts.company-admin')
+@extends('layouts.enterprise-layout')
 
-@section('title', 'Modifier Agent - ' . $company->name)
+@section('title', 'Modifier Agent - ' . $agent->name)
 
 @section('content')
-<div class="space-y-6">
+<!-- Modern Agent Edit -->
+<style>
+    /* Clean Edit Form Styles */
+    .agent-edit-container {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    /* Header Section */
+    .header-section {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .breadcrumb-link {
+        color: #6b7280;
+        text-decoration: none;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .breadcrumb-link:hover {
+        color: #3b82f6;
+    }
+    
+    .breadcrumb-separator {
+        color: #d1d5db;
+    }
+    
+    .breadcrumb-current {
+        color: #1f2937;
+        font-weight: 600;
+    }
+    
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .agent-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 2rem;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .header-info {
+        flex: 1;
+    }
+    
+    .header-title {
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .header-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+    }
+    
+    /* Form Section */
+    .form-section {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+    
+    .section-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f9fafb;
+    }
+    
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-icon {
+        width: 24px;
+        height: 24px;
+        background: #3b82f6;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .form-content {
+        padding: 2rem;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .required {
+        color: #ef4444;
+    }
+    
+    .form-input,
+    .form-select,
+    .form-textarea {
+        padding: 0.75rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        background: white;
+    }
+    
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+        color: #9ca3af;
+    }
+    
+    .form-help {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+    
+    .form-error {
+        font-size: 0.75rem;
+        color: #ef4444;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    /* Status Cards */
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .status-card {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    .status-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+    
+    .status-value {
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: #10b981;
+        color: white;
+    }
+    
+    /* Form Actions */
+    .form-actions {
+        padding: 2rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .actions-left {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        border: 1px solid;
+    }
+    
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+    }
+    
+    .btn-primary:hover {
+        background: #2563eb;
+        border-color: #2563eb;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-secondary {
+        background: white;
+        color: #6b7280;
+        border-color: #d1d5db;
+    }
+    
+    .btn-secondary:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+        color: #374151;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+        border-color: #dc2626;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+    }
+    
+    .modal {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        max-width: 400px;
+        width: 100%;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .modal-icon {
+        width: 48px;
+        height: 48px;
+        background: #fef2f2;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ef4444;
+    }
+    
+    .modal-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+    
+    .modal-subtitle {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+    
+    .modal-content {
+        color: #374151;
+        margin-bottom: 1.5rem;
+    }
+    
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .agent-edit-container {
+            padding: 1rem;
+        }
+        
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .status-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .actions-left {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="agent-edit-container">
     <!-- Header -->
-    <div class="bg-dark-800 rounded-xl p-6 card-shadow">
-        <div class="flex items-center gap-4 mb-6">
-            <div class="w-12 h-12 bg-brand-500/20 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
-                </svg>
+    <header class="header-section fade-in-up">
+        <div class="breadcrumb">
+            <a href="{{ route('company.admin.agents', $company) }}" class="breadcrumb-link">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                Agents
+            </a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">{{ $agent->name }}</span>
+        </div>
+        
+        <div class="header-content">
+            <div class="agent-avatar">
+                {{ substr($agent->name, 0, 1) }}
             </div>
-            <div>
-                <h1 class="text-2xl font-bold text-white">Modifier l'Agent</h1>
-                <p class="text-dark-600">
-                    Modifier les informations de {{ $agent->name }} pour l'entreprise {{ $company->name }}
-                </p>
+            <div class="header-info">
+                <h1 class="header-title">Modifier l'Agent</h1>
+                <p class="header-subtitle">Mettez à jour les informations de {{ $agent->name }}</p>
             </div>
         </div>
-    </div>
+    </header>
 
-    <!-- Form -->
-    <div class="bg-dark-800 rounded-xl card-shadow">
-        <form method="POST" action="{{ route('company.admin.agents.update', [$company, $agent]) }}" class="space-y-6">
-            @csrf
-            @method('PUT')
-            
-            <!-- Personal Information -->
-            <div class="p-6 border-b border-dark-700">
-                <h2 class="text-lg font-bold text-white mb-6">Informations Personnelles</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">
-                            Nom Complet <span class="text-red-400">*</span>
-                        </label>
-                        <input type="text" name="name" required
-                               value="{{ $agent->name }}"
-                               class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                               placeholder="Entrez le nom complet de l'agent">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">
-                            Email <span class="text-red-400">*</span>
-                        </label>
-                        <input type="email" name="email" required
-                               value="{{ $agent->email }}"
-                               class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                               placeholder="agent@entreprise.com">
+    <!-- Edit Form -->
+    <form method="POST" action="{{ route('company.admin.agents.update', [$company, $agent]) }}" class="form-section fade-in-up" style="animation-delay: 0.1s;">
+        @csrf
+        @method('PUT')
+        
+        <!-- Personal Information -->
+        <div class="section-header">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                </div>
+                Informations Personnelles
+            </h2>
+        </div>
+        
+        <div class="form-content">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">
+                        Nom Complet <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        name="name" 
+                        value="{{ $agent->name }}" 
+                        required
+                        class="form-input"
+                        placeholder="Entrez le nom complet"
+                    >
+                    <div class="form-help">Nom et prénom de l'agent</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Email <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="email" 
+                        name="email" 
+                        value="{{ $agent->email }}" 
+                        required
+                        class="form-input"
+                        placeholder="agent@entreprise.com"
+                    >
+                    <div class="form-help">Adresse email professionnelle</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Nouveau Mot de Passe
+                    </label>
+                    <input 
+                        type="password" 
+                        name="password" 
+                        class="form-input"
+                        placeholder="Laissez vide pour ne pas modifier"
+                    >
+                    <div class="form-help">Minimum 8 caractères (laissez vide pour conserver l'actuel)</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Téléphone
+                    </label>
+                    <input 
+                        type="tel" 
+                        name="phone" 
+                        value="{{ $agent->phone ?? '' }}" 
+                        class="form-input"
+                        placeholder="+33 1 23 45 67 89"
+                    >
+                    <div class="form-help">Numéro de téléphone professionnel</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Role Assignment -->
+        <div class="section-header">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i data-lucide="shield" style="width: 16px; height: 16px;"></i>
+                </div>
+                Assignation
+            </h2>
+        </div>
+        
+        <div class="form-content">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">
+                        Rôle <span class="required">*</span>
+                    </label>
+                    <select name="role" required class="form-select">
+                        <option value="">Sélectionnez un rôle</option>
+                        @php
+                            $agentPivot = $agent->companies()->where('company_id', $company->id)->first();
+                            $currentRole = $agentPivot ? $agentPivot->pivot->role : 'agent';
+                        @endphp
+                        <option value="agent" {{ $currentRole == 'agent' ? 'selected' : '' }}>
+                            Agent
+                        </option>
+                        <option value="company_admin" {{ $currentRole == 'company_admin' ? 'selected' : '' }}>
+                            Administrateur d'Entreprise
+                        </option>
+                    </select>
+                    <div class="form-help">
+                        Agent: Peut gérer les tickets et guichets<br>
+                        Admin: Peut gérer toute l'entreprise
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Guichet Assigné
+                    </label>
+                    <select name="counter_id" class="form-select">
+                        <option value="">Aucun guichet assigné</option>
+                        @foreach($counters as $counter)
+                        <option value="{{ $counter->id }}" 
+                                {{ ($agentPivot && $agentPivot->pivot->counter_id == $counter->id) ? 'selected' : '' }}>
+                            {{ $counter->name }} @if($counter->service) ({{ $counter->service->name }}) @endif
+                        </option>
+                        @endforeach
+                    </select>
+                    <div class="form-help">Optionnel: L'agent sera assigné à ce guichet par défaut</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Current Status -->
+        <div class="section-header">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i data-lucide="activity" style="width: 16px; height: 16px;"></i>
+                </div>
+                Statut Actuel
+            </h2>
+        </div>
+        
+        <div class="form-content">
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="status-label">Date de création</div>
+                    <div class="status-value">{{ $agent->created_at->format('d/m/Y H:i') }}</div>
+                </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">
-                            Nouveau Mot de Passe
-                        </label>
-                        <input type="password" name="password"
-                               class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                               placeholder="Laissez vide pour ne pas modifier">
-                        <p class="text-xs text-dark-600 mt-2">Minimum 8 caractères (laissez vide pour conserver l'actuel)</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">
-                            Téléphone
-                        </label>
-                        <input type="tel" name="phone"
-                               value="{{ $agent->phone ?? '' }}"
-                               class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                               placeholder="+33 1 23 45 67 89">
+                <div class="status-card">
+                    <div class="status-label">Dernière modification</div>
+                    <div class="status-value">{{ $agent->updated_at->format('d/m/Y H:i') }}</div>
+                </div>
+                
+                <div class="status-card">
+                    <div class="status-label">Statut du compte</div>
+                    <div class="status-badge">
+                        <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                        Actif
                     </div>
                 </div>
             </div>
-            
-            <!-- Role Assignment -->
-            <div class="p-6 border-b border-dark-700">
-                <h2 class="text-lg font-bold text-white mb-6">Assignation</h2>
+        </div>
+        
+        <!-- Actions -->
+        <div class="form-actions">
+            <div class="actions-left">
+                <a href="{{ route('company.admin.agents', $company) }}" class="btn btn-secondary">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                    Annuler
+                </a>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">
-                            Rôle <span class="text-red-400">*</span>
-                        </label>
-                        <select name="role" required
-                                class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
-                            <option value="">Sélectionnez un rôle</option>
-                            @php
-                                $agentPivot = $agent->companies()->where('company_id', $company->id)->first();
-                                $currentRole = $agentPivot ? $agentPivot->pivot->role : 'agent';
-                            @endphp
-                            <option value="agent" {{ $currentRole == 'agent' ? 'selected' : '' }}>
-                                Agent
-                            </option>
-                            <option value="company_admin" {{ $currentRole == 'company_admin' ? 'selected' : '' }}>
-                                Administrateur d'Entreprise
-                            </option>
-                        </select>
-                        <p class="text-xs text-dark-600 mt-2">
-                            Agent: Peut gérer les tickets et guichets<br>
-                            Admin: Peut gérer toute l'entreprise
-                        </p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">
-                            Guichet Assigné
-                        </label>
-                        <select name="counter_id"
-                                class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
-                            <option value="">Aucun guichet assigné</option>
-                            @foreach($counters as $counter)
-                            <option value="{{ $counter->id }}" 
-                                    {{ ($agentPivot && $agentPivot->pivot->counter_id == $counter->id) ? 'selected' : '' }}>
-                                {{ $counter->name }} @if($counter->service) ({{ $counter->service->name }}) @endif
-                            </option>
-                            @endforeach
-                        </select>
-                        <p class="text-xs text-dark-600 mt-2">
-                            Optionnel: L'agent sera assigné à ce guichet par défaut
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Current Status -->
-            <div class="p-6 border-b border-dark-700">
-                <h2 class="text-lg font-bold text-white mb-6">Statut Actuel</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <p class="text-sm text-dark-600 mb-1">Date de création</p>
-                        <p class="text-white">{{ $agent->created_at->format('d/m/Y H:i') }}</p>
-                    </div>
-                    
-                    <div>
-                        <p class="text-sm text-dark-600 mb-1">Dernière modification</p>
-                        <p class="text-white">{{ $agent->updated_at->format('d/m/Y H:i') }}</p>
-                    </div>
-                    
-                    <div>
-                        <p class="text-sm text-dark-600 mb-1">Statut du compte</p>
-                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
-                            Actif
-                        </span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Actions -->
-            <div class="p-6 flex justify-between items-center">
-                <div class="flex gap-4">
-                    <a href="{{ route('company.admin.agents', $company) }}" 
-                       class="px-6 py-3 bg-dark-700 text-white rounded-lg hover:bg-dark-600 font-medium">
-                        Annuler
-                    </a>
-                    
-                    <button type="button" 
-                            onclick="confirmDelete()"
-                            class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
-                        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                        Supprimer l'Agent
-                    </button>
-                </div>
-                
-                <button type="submit" 
-                        class="px-6 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-lg shadow-brand-600/30">
-                    <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    Enregistrer les Modifications
+                <button type="button" onclick="showDeleteModal()" class="btn btn-danger">
+                    <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                    Supprimer l'Agent
                 </button>
             </div>
-        </form>
-    </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                Enregistrer les Modifications
+            </button>
+        </div>
+    </form>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-dark-800 rounded-xl p-6 max-w-md w-full card-shadow">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.932-2.5L13.068 4c-.57-.833-1.392-1.5-2.932-1.5H4.864c-1.54 0-2.362.667-2.932 1.5L2.068 16.5c-.57.833-.608 2.5.932 2.5h13.856c1.54 0 2.362-.667 2.932-1.5l1.068-11z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-white">Supprimer l'agent</h3>
-                    <p class="text-dark-600">Cette action est irréversible</p>
-                </div>
+<!-- Delete Modal -->
+<div id="deleteModal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-icon">
+                <i data-lucide="alert-triangle" style="width: 24px; height: 24px;"></i>
             </div>
-            
-            <p class="text-dark-600 mb-6">
-                Êtes-vous sûr de vouloir supprimer l'agent <span class="font-medium text-white">{{ $agent->name }}</span> ?
-            </p>
-            
-            <div class="flex gap-3 justify-end">
-                <button onclick="closeDeleteModal()" 
-                        class="px-4 py-2 bg-dark-700 text-white rounded-lg hover:bg-dark-600 font-medium">
-                    Annuler
+            <div>
+                <h3 class="modal-title">Supprimer l'agent</h3>
+                <p class="modal-subtitle">Cette action est irréversible</p>
+            </div>
+        </div>
+        
+        <div class="modal-content">
+            Êtes-vous sûr de vouloir supprimer l'agent <strong>{{ $agent->name }}</strong> ?
+        </div>
+        
+        <div class="modal-actions">
+            <button onclick="hideDeleteModal()" class="btn btn-secondary">
+                Annuler
+            </button>
+            <form method="POST" action="{{ route('company.admin.agents.destroy', [$company, $agent]) }}" style="display: inline;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger">
+                    Supprimer
                 </button>
-                <form method="POST" action="{{ route('company.admin.agents.destroy', [$company, $agent]) }}" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" 
-                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
-                        Supprimer
-                    </button>
-                </form>
-            </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-// Delete confirmation
-function confirmDelete() {
-    document.getElementById('deleteModal').classList.remove('hidden');
-}
-
-function closeDeleteModal() {
-    document.getElementById('deleteModal').classList.add('hidden');
-}
-
-// Form validation
-document.querySelector('form').addEventListener('submit', function(e) {
-    const password = document.querySelector('input[name="password"]').value;
-    const email = document.querySelector('input[name="email"]').value;
-    const name = document.querySelector('input[name="name"]').value;
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Lucide icons
+    lucide.createIcons();
     
-    if (password && password.length < 8) {
-        e.preventDefault();
-        alert('Le mot de passe doit contenir au moins 8 caractères');
-        return;
-    }
+    // Form validation
+    const form = document.querySelector('form');
+    const passwordInput = document.querySelector('input[name="password"]');
+    const emailInput = document.querySelector('input[name="email"]');
+    const nameInput = document.querySelector('input[name="name"]');
     
-    if (!email || !name) {
-        e.preventDefault();
-        alert('Le nom et l\'email sont obligatoires');
-        return;
-    }
+    form.addEventListener('submit', function(e) {
+        // Password validation
+        if (passwordInput.value && passwordInput.value.length < 8) {
+            e.preventDefault();
+            showError('Le mot de passe doit contenir au moins 8 caractères');
+            passwordInput.focus();
+            return;
+        }
+        
+        // Required fields validation
+        if (!emailInput.value || !nameInput.value) {
+            e.preventDefault();
+            showError('Le nom et l\'email sont obligatoires');
+            if (!nameInput.value) nameInput.focus();
+            else emailInput.focus();
+            return;
+        }
+        
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailInput.value)) {
+            e.preventDefault();
+            showError('Veuillez entrer une adresse email valide');
+            emailInput.focus();
+            return;
+        }
+    });
+    
+    // Real-time validation feedback
+    const inputs = document.querySelectorAll('.form-input, .form-select');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.hasAttribute('required') && !this.value.trim()) {
+                this.style.borderColor = '#ef4444';
+            } else if (this.value.trim()) {
+                this.style.borderColor = '#10b981';
+            }
+        });
+        
+        input.addEventListener('focus', function() {
+            this.style.borderColor = '#3b82f6';
+        });
+    });
 });
+
+function showDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function hideDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function showError(message) {
+    // Create error toast
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ef4444;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        z-index: 2000;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Add animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
 </script>
 @endsection

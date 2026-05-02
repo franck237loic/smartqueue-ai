@@ -675,6 +675,12 @@ Route::middleware(['auth', 'belongs.to.company'])->group(function () {
             Route::post('/counter/{counter}/close', [AgentController::class, 'closeCounter'])->name('counter.close');
             Route::post('/counter/{counter}/pause', [AgentController::class, 'pauseCounter'])->name('counter.pause');
             Route::post('/counter/{counter}/resume', [AgentController::class, 'resumeCounter'])->name('counter.resume');
+
+            // Agent API Routes
+            Route::prefix('api')->group(function () {
+                Route::get('/work-schedules/status', [AgentController::class, 'workSchedulesStatusApi']);
+                Route::get('/performance', [AgentController::class, 'performanceApi']);
+            });
         });
  
     // Actions tickets agent (hors groupe préfixé)
@@ -709,6 +715,23 @@ Route::middleware(['auth', 'isSuperAdmin'])
  
         Route::get('/users', [SuperAdminController::class, 'users'])->name('users');
         Route::post('/users/{user}/make-super-admin', [SuperAdminController::class, 'makeSuperAdmin'])->name('users.make-super-admin');
+
+        // Nouvelles routes pour les pages système
+        Route::get('/statistics', [SuperAdminController::class, 'statistics'])->name('statistics');
+        Route::get('/settings', [SuperAdminController::class, 'settings'])->name('settings');
+        Route::put('/settings', [SuperAdminController::class, 'updateSettings'])->name('settings.update');
+        
+        Route::get('/administrators', [SuperAdminController::class, 'administrators'])->name('administrators');
+        Route::get('/administrators/create', [SuperAdminController::class, 'createAdministrator'])->name('administrators.create');
+        Route::post('/administrators', [SuperAdminController::class, 'storeAdministrator'])->name('administrators.store');
+        Route::post('/administrators/{administrator}/suspend', [SuperAdminController::class, 'suspendAdministrator'])->name('administrators.suspend');
+        Route::post('/administrators/{administrator}/reset-password', [SuperAdminController::class, 'resetAdministratorPassword'])->name('administrators.reset-password');
+        Route::delete('/administrators/{administrator}', [SuperAdminController::class, 'destroyAdministrator'])->name('administrators.destroy');
+
+        // Profil Super Admin
+        Route::get('/profile', [SuperAdminController::class, 'profile'])->name('profile');
+        Route::put('/profile', [SuperAdminController::class, 'updateProfile'])->name('profile.update');
+        Route::put('/profile/password', [SuperAdminController::class, 'updatePassword'])->name('profile.password');
     });
  
  

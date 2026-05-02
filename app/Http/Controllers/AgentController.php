@@ -68,19 +68,33 @@ class AgentController extends Controller
                 ->with(['service', 'counter'])
                 ->first();
 
+            // Calculate waiting tickets count
+            $waitingTickets = Ticket::where('company_id', $company->id)
+                ->where('status', 'WAITING')
+                ->count();
+
             // Taux de service aujourd'hui
             $totalHandledToday = $myTicketsToday + $missedTicketsToday;
             $serviceRateToday = $totalHandledToday > 0 ? round(($myTicketsToday / $totalHandledToday) * 100, 1) : 0;
 
+            // Define all variables for compact()
+            $counters = $myCounters; // Alias for compatibility
+            $servedToday = $myTicketsToday; // Alias for compatibility
+            $missedToday = $missedTicketsToday; // Alias for compatibility
+
             return view('company.agent.dashboard', compact(
                 'company', 
                 'myCounters', 
+                'counters', 
                 'myTicketsToday', 
+                'servedToday', 
                 'services', 
                 'missedTicketsToday', 
+                'missedToday', 
                 'currentTicket', 
                 'avgServiceTime', 
-                'serviceRateToday'
+                'serviceRateToday',
+                'waitingTickets'
             ));
             
         } catch (\Exception $e) {
@@ -532,5 +546,138 @@ class AgentController extends Controller
             ->where('counters.company_id', $company->id)
             ->where('counters.status', 'open')
             ->first();
+    }
+
+    /**
+     * API endpoint for performance stats
+     */
+    public function performanceApi(Company $company)
+    {
+        $agent = auth()->user();
+        
+        // Get performance stats
+        $servedToday = Ticket::where('company_id', $company->id)
+            ->where('agent_id', $agent->id)
+            ->whereDate('created_at', now()->toDateString())
+            ->where('status', 'SERVED')
+            ->count();
+
+        $missedToday = Ticket::where('company_id', $company->id)
+            ->where('agent_id', $agent->id)
+            ->whereDate('created_at', now()->toDateString())
+            ->where('status', 'MISSED')
+            ->count();
+
+        $avgServiceTime = Ticket::where('company_id', $company->id)
+            ->where('agent_id', $agent->id)
+            ->whereDate('created_at', now()->toDateString())
+            ->where('status', 'SERVED')
+            ->whereNotNull('actual_service_time')
+            ->avg('actual_service_time');
+
+        return response()->json([
+            'stats' => [
+                'served_today' => $servedToday,
+                'missed_today' => $missedToday,
+                'avg_service_time' => round($avgServiceTime ?? 0, 2),
+            ]
+        ]);
+    }
+
+    /**
+     * API endpoint for work schedules status (agent version)
+     */
+    public function workSchedulesStatusApi(Company $company)
+    {
+        try {
+            $agent = auth()->user();
+            
+            // Get agent's counters with simpler approach
+            $counters = \App\Models\Counter::where('company_id', $company->id)
+                ->where('user_id', $agent->id)
+                ->with('service')
+                ->get();
+
+            $statusData = [];
+            $now = now();
+
+            foreach ($counters as $counter) {
+                // Get work schedules for this counter
+                $schedules = \App\Models\WorkSchedule::where('counter_id', $counter->id)
+                    ->where('company_id', $company->id)
+                    ->active()
+                    ->get();
+                
+                $schedule = $schedules->first();
+                
+                $statusData[] = [
+                    'counter_id' => $counter->id,
+                    'counter_name' => $counter->name,
+                    'service' => $counter->service?->name,
+                    'agent' => $agent->name,
+                    'current_status' => $counter->status,
+                    'is_scheduled' => $schedule ? true : false,
+                    'is_active_today' => $schedule ? $this->isScheduleActiveToday($schedule) : false,
+                    'is_in_working_hours' => $schedule ? $this->isInWorkingHours($schedule) : false,
+                    'schedule_start' => $schedule?->morning_start,
+                    'schedule_end' => $schedule?->evening_end,
+                    'timestamp' => $now->toISOString()
+                ];
+            }
+
+            return response()->json([
+                'counters' => $statusData,
+                'timestamp' => $now->toISOString()
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in workSchedulesStatusApi: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to load schedule status',
+                'counters' => [],
+                'timestamp' => now()->toISOString()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check if schedule is active today
+     */
+    private function isScheduleActiveToday($schedule)
+    {
+        if (!$schedule) return false;
+        
+        $today = now()->format('Y-m-d');
+        $startDate = \Carbon\Carbon::parse($schedule->start_date)->format('Y-m-d');
+        $endDate = $schedule->end_date ? \Carbon\Carbon::parse($schedule->end_date)->format('Y-m-d') : null;
+        
+        return $today >= $startDate && (!$endDate || $today <= $endDate);
+    }
+
+    /**
+     * Check if current time is within working hours
+     */
+    private function isInWorkingHours($schedule)
+    {
+        if (!$schedule) return false;
+        
+        $now = now();
+        $currentTime = $now->format('H:i');
+        
+        // Check morning shift
+        if ($schedule->morning_start && $schedule->morning_end) {
+            if ($currentTime >= $schedule->morning_start && $currentTime <= $schedule->morning_end) {
+                return true;
+            }
+        }
+        
+        // Check evening shift
+        if ($schedule->evening_start && $schedule->evening_end) {
+            if ($currentTime >= $schedule->evening_start && $currentTime <= $schedule->evening_end) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

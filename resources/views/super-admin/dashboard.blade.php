@@ -3,216 +3,567 @@
 @section('title', 'Super Admin - Dashboard')
 
 @section('content')
-<div class="space-y-8" x-data="{ stats: {!! json_encode($stats ?? []) !!} }">
-    <!-- Header avec animation -->
-    <div class="flex items-center justify-between">
-        <div class="space-y-2">
-            <h1 class="text-4xl font-bold gradient-text animate-float">Dashboard Super Admin</h1>
-            <p class="text-gray-500 text-lg">Vue d'ensemble de la plateforme SmartQueue AI</p>
+<div class="dashboard-container" x-data="{ stats: {!! json_encode($stats ?? []) !!} }">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Bienvenue, Super Admin</h1>
+            <p class="welcome-subtitle">Voici un aperçu de votre plateforme SmartQueue AI</p>
         </div>
-        <div class="text-right">
-            <p class="text-sm text-gray-500">Dernière synchronisation</p>
-            <p class="text-lg font-semibold text-white" x-text="new Date().toLocaleTimeString()"></p>
+        <div class="welcome-time">
+            <div class="time-display" x-text="new Date().toLocaleTimeString()"></div>
+            <div class="time-label">{{ now()->format('l d F Y') }}</div>
         </div>
     </div>
 
-    <!-- Stats Cards avec animations -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="stat-card rounded-2xl p-6 card-shadow group cursor-pointer" @click="animateCard($event)">
-            <div class="relative z-10">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-14 h-14 bg-gradient-to-br from-brand-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-600/30 group-hover:scale-110 transition-transform duration-300">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                        </svg>
-                    </div>
-                    <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                        </svg>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-500 font-medium mb-2">Entreprises totales</p>
-                <p class="text-3xl font-bold text-white mb-2" x-text="stats.companies_count"></p>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-emerald-400 font-medium">+12%</span>
-                    <span class="text-xs text-gray-500">vs mois dernier</span>
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                    <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number" x-text="stats.companies_count || 0"></div>
+                <div class="stat-label">Entreprises totales</div>
+                <div class="stat-change positive">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    <span>+12%</span>
                 </div>
             </div>
         </div>
 
-        <div class="stat-card rounded-2xl p-6 card-shadow group cursor-pointer" @click="animateCard($event)">
-            <div class="relative z-10">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-600/30 group-hover:scale-110 transition-transform duration-300">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <div class="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center animate-pulse">
-                        <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-500 font-medium mb-2">Entreprises actives</p>
-                <p class="text-3xl font-bold text-white mb-2" x-text="stats.active_companies"></p>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-emerald-400 font-medium">En ligne</span>
-                    <span class="text-xs text-gray-500">• 99.9% uptime</span>
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number" x-text="stats.active_companies || 0"></div>
+                <div class="stat-label">Entreprises actives</div>
+                <div class="stat-change">
+                    <div class="status-dot"></div>
+                    <span>En ligne</span>
                 </div>
             </div>
         </div>
 
-        <div class="stat-card rounded-2xl p-6 card-shadow group cursor-pointer" @click="animateCard($event)">
-            <div class="relative z-10">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-600/30 group-hover:scale-110 transition-transform duration-300">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
-                        </svg>
-                    </div>
-                    <div class="w-8 h-8 bg-violet-500/20 rounded-full flex items-center justify-center">
-                        <span class="text-xs text-violet-400 font-bold">+8</span>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-500 font-medium mb-2">Utilisateurs totaux</p>
-                <p class="text-3xl font-bold text-white mb-2" x-text="stats.total_users || 0"></p>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-violet-400 font-medium">+25%</span>
-                    <span class="text-xs text-gray-500">ce mois</span>
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                    <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number" x-text="stats.total_users || 0"></div>
+                <div class="stat-label">Utilisateurs totaux</div>
+                <div class="stat-change positive">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    <span>+25%</span>
                 </div>
             </div>
         </div>
 
-        <div class="stat-card rounded-2xl p-6 card-shadow group cursor-pointer" @click="animateCard($event)">
-            <div class="relative z-10">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-600/30 group-hover:scale-110 transition-transform duration-300">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                        </svg>
-                    </div>
-                    <div class="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center animate-pulse">
-                        <svg class="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
-                        </svg>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-500 font-medium mb-2">Super Admins</p>
-                <p class="text-3xl font-bold text-white mb-2" x-text="stats.super_admins || {{ \App\Models\User::where('global_role', 'super_admin')->count() }}"></p>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-red-400 font-medium">Sécurisé</span>
-                    <span class="text-xs text-gray-500">• Accès total</span>
+        <div class="stat-card danger">
+            <div class="stat-icon">
+                <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                    <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number" x-text="stats.super_admins || {{ \App\Models\User::where('global_role', 'super_admin')->count() }}"></div>
+                <div class="stat-label">Super Admins</div>
+                <div class="stat-change">
+                    <div class="status-dot"></div>
+                    <span>Sécurisé</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Actions rapides avec effets -->
-    <div class="bg-gradient-to-br from-dark-800 via-purple-900/10 to-dark-800 rounded-2xl p-8 card-shadow">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-2xl font-bold gradient-text">Actions rapides</h3>
-            <div class="w-8 h-8 bg-brand-500/20 rounded-lg flex items-center justify-center animate-pulse">
-                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <div class="section-header">
+            <h2 class="section-title">Actions rapides</h2>
+            <div class="section-icon">
+                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                    <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
             </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="{{ route('super_admin.companies.create') }}" class="btn-primary px-6 py-4 rounded-2xl text-center font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group">
-                <span class="relative z-10 flex items-center justify-center gap-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        <div class="actions-grid">
+            <a href="{{ route('super_admin.companies.create') }}" class="action-card primary">
+                <div class="action-icon">
+                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                        <path d="M12 4v16m8-8H4"/>
                     </svg>
-                    Nouvelle entreprise
-                </span>
+                </div>
+                <span>Nouvelle entreprise</span>
             </a>
-            <a href="{{ route('super_admin.companies') }}" class="px-6 py-4 bg-dark-700 text-dark-600 rounded-2xl text-center font-semibold hover:bg-dark-600 hover:text-white hover:shadow-xl transform hover:scale-105 transition-all duration-300 group">
-                <span class="flex items-center justify-center gap-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            <a href="{{ route('super_admin.companies') }}" class="action-card">
+                <div class="action-icon">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
-                    Voir toutes les entreprises
-                </span>
+                </div>
+                <span>Voir toutes les entreprises</span>
             </a>
-            <a href="{{ route('super_admin.users') }}" class="px-6 py-4 bg-dark-700 text-dark-600 rounded-2xl text-center font-semibold hover:bg-dark-600 hover:text-white hover:shadow-xl transform hover:scale-105 transition-all duration-300 group">
-                <span class="flex items-center justify-center gap-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+            <a href="{{ route('super_admin.users') }}" class="action-card">
+                <div class="action-icon">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
                     </svg>
-                    Gérer les utilisateurs
-                </span>
+                </div>
+                <span>Gérer les utilisateurs</span>
             </a>
         </div>
     </div>
 
-    <!-- Entreprises récentes avec design moderne -->
-    <div class="bg-gradient-to-br from-dark-800 via-dark-800 to-dark-900 rounded-2xl card-shadow overflow-hidden">
-        <div class="p-6 border-b border-dark-700 bg-gradient-to-r from-dark-800 to-purple-900/10">
-            <div class="flex items-center justify-between">
-                <h3 class="text-2xl font-bold gradient-text">Entreprises récentes</h3>
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span class="text-sm text-green-400 font-medium">Temps réel</span>
-                </div>
+    <!-- Recent Companies -->
+    <div class="recent-companies">
+        <div class="section-header">
+            <h2 class="section-title">Entreprises récentes</h2>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Temps réel</span>
             </div>
         </div>
-        <div class="divide-y divide-dark-700/50">
+        <div class="companies-list">
             @forelse($recentCompanies as $company)
-            <div class="p-6 flex items-center justify-between hover:bg-gradient-to-r hover:from-dark-700/30 hover:to-purple-900/10 transition-all duration-300 group cursor-pointer">
-                <div class="flex items-center gap-4">
-                    <div class="relative">
-                        <div class="w-12 h-12 bg-gradient-to-br from-brand-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                            <span class="text-brand-500 font-bold text-lg">{{ substr($company->name, 0, 2) }}</span>
-                        </div>
-                        <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-dark-800 animate-pulse"></div>
-                    </div>
-                    <div>
-                        <a href="{{ route('super_admin.companies.show', $company) }}" class="font-semibold text-white hover:text-brand-500 transition-colors text-lg group-hover:text-brand-400">
-                            {{ $company->name }}
-                        </a>
-                        <div class="flex items-center gap-3 mt-1">
-                            <p class="text-sm text-dark-600">{{ $company->email }}</p>
-                            <span class="text-dark-600">•</span>
-                            <p class="text-sm text-dark-600">{{ $company->created_at->format('d/m/Y') }}</p>
-                        </div>
+            <div class="company-card">
+                <div class="company-avatar">
+                    <span>{{ substr($company->name, 0, 2) }}</span>
+                    <div class="online-indicator"></div>
+                </div>
+                <div class="company-info">
+                    <h3 class="company-name">{{ $company->name }}</h3>
+                    <div class="company-meta">
+                        <span>{{ $company->email }}</span>
+                        <span>•</span>
+                        <span>{{ $company->created_at->format('d/m/Y') }}</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <span class="px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-sm
-                        @if($company->status === 'active') bg-green-500/20 text-green-400 border border-green-500/30
-                        @elseif($company->status === 'suspended') bg-yellow-500/20 text-yellow-400 border border-yellow-500/30
-                        @else bg-dark-700 text-dark-600 border border-dark-600 @endif">
+                <div class="company-actions">
+                    <span class="status-badge {{ $company->status === 'active' ? 'active' : ($company->status === 'suspended' ? 'suspended' : 'inactive') }}">
                         {{ $company->status }}
                     </span>
-                    <div class="w-8 h-8 bg-dark-700 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    <a href="{{ route('super_admin.companies.show', $company) }}" class="view-btn">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 5l7 7-7 7"/>
                         </svg>
-                    </div>
+                    </a>
                 </div>
             </div>
             @empty
-            <div class="p-12 text-center">
-                <div class="w-16 h-16 bg-dark-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-dark-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
                 </div>
-                <p class="text-dark-600 text-lg font-medium">Aucune entreprise créée</p>
-                <p class="text-dark-600 text-sm mt-2">Commencez par ajouter votre première entreprise</p>
+                <h3 class="empty-title">Aucune entreprise créée</h3>
+                <p class="empty-description">Commencez par ajouter votre première entreprise</p>
             </div>
             @endforelse
         </div>
     </div>
 </div>
 
-<script>
-function animateCard(event) {
-    const card = event.currentTarget;
-    card.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-        card.style.transform = 'scale(1)';
-    }, 150);
+<style>
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
 }
-</script>
+
+/* Welcome Section */
+.welcome-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    border-radius: 20px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.welcome-time {
+    text-align: right;
+}
+
+.time-display {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.time-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card.primary .stat-icon {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+}
+
+.stat-card.success .stat-icon {
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+}
+
+.stat-card.warning .stat-icon {
+    background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+}
+
+.stat-card.danger .stat-icon {
+    background: linear-gradient(135deg, var(--error) 0%, #dc2626 100%);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
+}
+
+.stat-change {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.stat-change.positive {
+    color: var(--success);
+}
+
+.stat-change svg {
+    width: 16px;
+    height: 16px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Quick Actions */
+.quick-actions {
+    margin-bottom: 3rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.section-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--gray-600);
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.action-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--dark);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.action-card.primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: white;
+}
+
+.action-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--gray-100);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-card.primary .action-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Recent Companies */
+.recent-companies {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.companies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.company-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    transition: background 0.3s ease;
+}
+
+.company-card:hover {
+    background: var(--gray-50);
+}
+
+.company-avatar {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+    position: relative;
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 12px;
+    height: 12px;
+    background: var(--success);
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.company-info {
+    flex: 1;
+}
+
+.company-name {
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 0.25rem;
+}
+
+.company-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--gray-500);
+}
+
+.company-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-badge.active {
+    background: var(--success);
+    color: white;
+}
+
+.status-badge.suspended {
+    background: var(--warning);
+    color: white;
+}
+
+.status-badge.inactive {
+    background: var(--gray-200);
+    color: var(--gray-600);
+}
+
+.view-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--gray-100);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-600);
+    transition: all 0.3s ease;
+}
+
+.view-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--gray-500);
+}
+
+.empty-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 1rem;
+    opacity: 0.3;
+}
+
+.empty-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.empty-description {
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .welcome-section {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .welcome-time {
+        text-align: center;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 @endsection

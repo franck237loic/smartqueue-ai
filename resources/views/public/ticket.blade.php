@@ -3,34 +3,436 @@
 @section('title', 'Suivi Ticket - ' . $ticket->number)
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12">
-    <div class="max-w-4xl mx-auto px-4">
+<!-- SmartQueue AI Design System -->
+<link rel="stylesheet" href="{{ asset('css/smartqueue.css') }}">
+
+<style>
+    /* Page-specific styles */
+    .ticket-page {
+        background: var(--gradient-hero-blue);
+        min-height: 100vh;
+        position: relative;
+    }
+    
+    .ticket-page::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    
+    .ticket-container {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .ticket-header {
+        text-align: center;
+        margin-bottom: var(--space-8);
+    }
+    
+    .ticket-title {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: var(--space-2);
+    }
+    
+    .ticket-subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.25rem;
+    }
+    
+    .ticket-card {
+        background: white;
+        border-radius: var(--radius-3xl);
+        box-shadow: var(--shadow-premium);
+        padding: var(--space-8);
+        margin-bottom: var(--space-8);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .ticket-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-luxury);
+    }
+    
+    .ticket-number-display {
+        text-align: center;
+        margin-bottom: var(--space-8);
+    }
+    
+    .ticket-number-badge {
+        display: inline-block;
+        background: var(--gradient-blue);
+        color: white;
+        border-radius: var(--radius-2xl);
+        padding: var(--space-6);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .ticket-number-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: var(--space-2);
+        opacity: 0.9;
+    }
+    
+    .ticket-number-value {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: var(--space-2) var(--space-4);
+        border-radius: 50px;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+    
+    .status-waiting {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    
+    .status-called {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .status-served {
+        background: rgba(59, 130, 246, 0.1);
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .status-present {
+        background: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+    
+    .status-missed {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    
+    .status-cancelled {
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+        border: 1px solid rgba(107, 114, 128, 0.2);
+    }
+    
+    .position-display {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(245, 158, 11, 0.05));
+        border: 1px solid rgba(251, 191, 36, 0.2);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
+        margin-top: var(--space-4);
+    }
+    
+    .position-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-2);
+    }
+    
+    .position-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #d97706;
+    }
+    
+    .position-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #d97706;
+    }
+    
+    .position-progress {
+        width: 100%;
+        background: rgba(251, 191, 36, 0.2);
+        border-radius: 50px;
+        height: 8px;
+        overflow: hidden;
+    }
+    
+    .position-progress-bar {
+        background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        height: 100%;
+        border-radius: 50px;
+        transition: width 0.3s ease;
+    }
+    
+    .position-text {
+        font-size: 0.875rem;
+        color: #d97706;
+        margin-top: var(--space-2);
+    }
+    
+    .time-display {
+        background: rgba(59, 130, 246, 0.05);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
+        margin-top: var(--space-4);
+    }
+    
+    .time-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .time-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #2563eb;
+    }
+    
+    .time-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #2563eb;
+    }
+    
+    .time-text {
+        font-size: 0.875rem;
+        color: #2563eb;
+        margin-top: var(--space-1);
+    }
+    
+    .alert-notification {
+        border-left: 4px solid;
+        padding: var(--space-4);
+        margin-top: var(--space-4);
+        border-radius: var(--radius-lg);
+    }
+    
+    .alert-critical {
+        background: rgba(239, 68, 68, 0.05);
+        border-left-color: #ef4444;
+    }
+    
+    .alert-warning {
+        background: rgba(245, 158, 11, 0.05);
+        border-left-color: #f59e0b;
+    }
+    
+    .alert-success {
+        background: rgba(16, 185, 129, 0.05);
+        border-left-color: #10b981;
+    }
+    
+    .service-info {
+        background: rgba(148, 163, 184, 0.05);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
+        margin-bottom: var(--space-6);
+    }
+    
+    .service-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-bottom: var(--space-1);
+    }
+    
+    .service-name {
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    .presence-confirmation {
+        background: rgba(16, 185, 129, 0.05);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        margin-bottom: var(--space-6);
+        text-align: center;
+    }
+    
+    .presence-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #059669;
+        margin-bottom: var(--space-4);
+    }
+    
+    .presence-message {
+        color: #047857;
+        margin-bottom: var(--space-4);
+    }
+    
+    .presence-button {
+        background: #10b981;
+        color: white;
+        border: none;
+        border-radius: var(--radius-lg);
+        padding: var(--space-4) var(--space-8);
+        font-weight: 700;
+        font-size: 1.125rem;
+        cursor: pointer;
+        transition: all var(--transition-base);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .presence-button:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .cancel-button {
+        width: 100%;
+        padding: var(--space-3);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        background: transparent;
+        color: #dc2626;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-base);
+    }
+    
+    .cancel-button:hover {
+        background: rgba(239, 68, 68, 0.05);
+    }
+    
+    .instructions-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        box-shadow: var(--shadow-lg);
+        padding: var(--space-6);
+    }
+    
+    .instructions-title {
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: var(--space-3);
+    }
+    
+    .instructions-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+    
+    .instruction-item {
+        font-size: 0.875rem;
+        color: #475569;
+        line-height: 1.6;
+    }
+    
+    .instruction-item strong {
+        color: #1e293b;
+    }
+    
+    .update-info {
+        background: rgba(59, 130, 246, 0.05);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: var(--radius-lg);
+        padding: var(--space-3);
+        margin-top: var(--space-4);
+    }
+    
+    .update-label {
+        font-size: 0.875rem;
+        color: #2563eb;
+    }
+    
+    .update-time {
+        font-weight: 600;
+        color: #1e40af;
+    }
+    
+    .footer-link {
+        display: block;
+        text-align: center;
+        padding: var(--space-4);
+        background: rgba(148, 163, 184, 0.05);
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: all var(--transition-base);
+    }
+    
+    .footer-link:hover {
+        color: #1e40af;
+        background: rgba(148, 163, 184, 0.1);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .ticket-container {
+            padding: var(--space-4);
+        }
+        
+        .ticket-card {
+            padding: var(--space-6);
+        }
+        
+        .ticket-number-value {
+            font-size: 2.5rem;
+        }
+        
+        .position-value {
+            font-size: 1.5rem;
+        }
+        
+        .time-value {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+
+<div class="ticket-page py-12">
+    <div class="ticket-container container max-w-4xl">
         <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">Suivi de Ticket</h1>
-            <p class="text-gray-600">Banque Populaire</p>
+        <div class="ticket-header">
+            <h1 class="ticket-title">Suivi de Ticket</h1>
+            <p class="ticket-subtitle">{{ $company->name ?? 'SmartQueue AI' }}</p>
         </div>
 
         <!-- Ticket Card -->
-        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <div class="ticket-card">
             <!-- Ticket Number -->
-            <div class="text-center mb-8">
-                <div class="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-6 shadow-lg">
-                    <div class="text-sm font-medium mb-2">Votre ticket</div>
-                    <div class="text-4xl font-bold">{{ $ticket->number }}</div>
+            <div class="ticket-number-display">
+                <div class="ticket-number-badge">
+                    <div class="ticket-number-label">Votre ticket</div>
+                    <div class="ticket-number-value">{{ $ticket->number }}</div>
                 </div>
             </div>
 
             <!-- Status & Position -->
             <div class="mb-6">
                 @if($ticket->isCalled())
-                    <div class="presence-confirmation bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-                        <h3 class="text-lg font-semibold text-green-800 mb-4">📢 Votre ticket a été appelé!</h3>
-                        <p class="text-green-700 mb-4">Veuillez vous rendre au guichet {{ $ticket->counter->name ?? 'N/A' }}</p>
+                    <div class="presence-confirmation">
+                        <h3 class="presence-title">📢 Votre ticket a été appelé!</h3>
+                        <p class="presence-message">Veuillez vous rendre au guichet {{ $ticket->counter->name ?? 'N/A' }}</p>
                         
-                        <form id="confirmPresenceForm" method="POST" action="{{ route('client.confirm', ['ticket' => $ticket->id]) }}" class="text-center">
+                        <form id="confirmPresenceForm" method="POST" action="{{ route('client.confirm', ['ticket' => $ticket->id]) }}">
                             @csrf
-                            <button type="submit" class="px-8 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold text-lg transition-colors duration-200 shadow-lg transform hover:scale-105">
+                            <button type="submit" class="presence-button">
                                 &#x270b; Je suis présent
                             </button>
                         </form>
@@ -48,46 +450,46 @@
                     $estimatedTime = $ticket->getEstimatedWaitTime();
                     ?>
                     
-                    <span class="px-4 py-2 bg-orange-100 text-orange-800 rounded-full font-medium">
+                    <span class="status-badge status-waiting">
                         En attente
                     </span>
                     
                     <!-- Position Complete -->
-                    <div class="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg p-4 mt-4 border border-orange-200">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-medium text-orange-800">Votre position</span>
-                            <span class="text-2xl font-bold text-orange-900">{{ $position }} / {{ $totalWaiting }}</span>
+                    <div class="position-display">
+                        <div class="position-header">
+                            <span class="position-label">Votre position</span>
+                            <span class="position-value">{{ $position }} / {{ $totalWaiting }}</span>
                         </div>
-                        <div class="w-full bg-orange-200 rounded-full h-2">
-                            <div class="bg-gradient-to-r from-orange-500 to-yellow-500 h-2 rounded-full" style="width: {{ (($totalWaiting - $position + 1) / $totalWaiting) * 100 }}%"></div>
+                        <div class="position-progress">
+                            <div class="position-progress-bar" style="width: {{ (($totalWaiting - $position + 1) / $totalWaiting) * 100 }}%"></div>
                         </div>
-                        <p class="text-sm text-orange-700 mt-2">
+                        <p class="position-text">
                             Plus que {{ $position - 1 }} personne{{ $position > 2 ? 's' : '' }} avant vous
                         </p>
                     </div>
                     
                     <!-- Temps d'attente -->
-                    <div class="bg-blue-50 rounded-lg p-4 mt-4 border border-blue-200">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm font-medium text-blue-800">Temps estimé</span>
-                            <span class="text-xl font-bold text-blue-900">{{ $estimatedTime }} minutes</span>
+                    <div class="time-display">
+                        <div class="time-header">
+                            <span class="time-label">Temps estimé</span>
+                            <span class="time-value">{{ $estimatedTime }} minutes</span>
                         </div>
-                        <p class="text-sm text-blue-700 mt-1">
+                        <p class="time-text">
                             Environ {{ round($estimatedTime / 60) }}h{{ $estimatedTime % 60 }}min d'attente
                         </p>
                     </div>
                     
                     <!-- Notifications intelligentes -->
                     @if($position <= 3)
-                        <div class="bg-red-50 border-l-4 border-red-500 p-4 mt-4 animate-pulse">
-                            <div class="flex">
+                        <div class="alert-notification alert-critical animate-pulse">
+                            <div class="flex items-center gap-3">
                                 <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-red-800">
+                                <div>
+                                    <p class="font-medium text-red-800">
                                         @if($position == 1)
                                             C'est votre tour ! Présentez-vous au guichet
                                         @elseif($position == 2)
@@ -100,15 +502,15 @@
                             </div>
                         </div>
                     @elseif($position <= 5)
-                        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mt-4">
-                            <div class="flex">
+                        <div class="alert-notification alert-warning">
+                            <div class="flex items-center gap-3">
                                 <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-yellow-800">
+                                <div>
+                                    <p class="font-medium text-yellow-800">
                                         Votre tour approche ! Préparez vos documents
                                     </p>
                                 </div>
@@ -117,15 +519,15 @@
                     @endif
                     
                 @elseif($ticket->isCalled())
-                    <div class="bg-green-50 border-l-4 border-green-500 p-4 animate-pulse">
-                        <div class="flex">
+                    <div class="alert-notification alert-success animate-pulse">
+                        <div class="flex items-center gap-3">
                             <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                 </svg>
                             </div>
-                            <div class="ml-3">
-                                <p class="text-lg font-bold text-green-800">APPEL EN COURS !</p>
+                            <div>
+                                <p class="font-bold text-green-800">APPEL EN COURS !</p>
                                 <p class="text-green-700 mt-1">
                                     Présentez-vous au: <span class="font-bold text-green-900">{{ $ticket->counter?->name ?? 'Guichet' }}</span>
                                 </p>
@@ -133,28 +535,28 @@
                         </div>
                     </div>
                 @elseif($ticket->isServed())
-                    <span class="px-4 py-2 bg-blue-100 text-blue-800 rounded-full font-medium">
+                    <span class="status-badge status-served">
                         Servi
                     </span>
                 @elseif($ticket->isPresent())
-                    <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full font-medium">
+                    <span class="status-badge status-present">
                         ✅ Présent confirmé
                     </span>
                 @elseif($ticket->isMissedTemp())
-                    <span class="px-4 py-2 bg-red-100 text-red-800 rounded-full font-medium">
+                    <span class="status-badge status-missed">
                         Manqué
                     </span>
                 @elseif($ticket->isCancelled())
-                    <span class="px-4 py-2 bg-gray-100 text-gray-800 rounded-full font-medium">
+                    <span class="status-badge status-cancelled">
                         Annulé
                     </span>
                 @endif
             </div>
 
                 <!-- Service info -->
-                <div class="bg-slate-50 rounded-lg p-4 mb-6">
-                    <p class="text-sm text-slate-500">Service</p>
-                    <p class="font-medium text-slate-900">{{ $ticket->service?->name ?? '-' }}</p>
+                <div class="service-info">
+                    <p class="service-label">Service</p>
+                    <p class="service-name">{{ $ticket->service?->name ?? '-' }}</p>
                 </div>
 
                 <!-- Actions -->
@@ -162,7 +564,7 @@
                 <form method="POST" action="{{ route('company.ticket.cancel', [$company, $ticket]) }}" onsubmit="return confirm('Annuler ce ticket ?')">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="w-full py-3 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 font-medium">
+                    <button type="submit" class="cancel-button">
                         Annuler le ticket
                     </button>
                 </form>
@@ -170,24 +572,22 @@
             </div>
 
             <!-- Footer -->
-            <div class="bg-slate-50 px-6 py-4 text-center">
-                <a href="{{ route('company.public', $company) }}" class="text-blue-600 hover:text-blue-800 text-sm">
-                    ← Retour aux services
-                </a>
-            </div>
+            <a href="{{ route('company.public', $company) }}" class="footer-link">
+                ← Retour aux services
+            </a>
         </div>
 
         <!-- Instructions -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h3 class="font-bold text-gray-900 mb-3">Comment suivre votre ticket</h3>
-            <div class="space-y-2 text-sm text-gray-600">
-                <p>1. <strong>Gardez cette page ouverte</strong> - Elle se met à jour automatiquement</p>
-                <p>2. <strong>Écoutez les annonces</strong> - Votre numéro sera appelé</p>
-                <p>3. <strong>Surveillez les notifications</strong> - Elles apparaissent quand c'est bientôt votre tour</p>
-                <p>4. <strong>Présentez-vous au guichet</strong> - Quand votre ticket est appelé</p>
+        <div class="instructions-card">
+            <h3 class="instructions-title">Comment suivre votre ticket</h3>
+            <div class="instructions-list">
+                <p class="instruction-item">1. <strong>Gardez cette page ouverte</strong> - Elle se met à jour automatiquement</p>
+                <p class="instruction-item">2. <strong>Écoutez les annonces</strong> - Votre numéro sera appelé</p>
+                <p class="instruction-item">3. <strong>Surveillez les notifications</strong> - Elles apparaissent quand c'est bientôt votre tour</p>
+                <p class="instruction-item">4. <strong>Présentez-vous au guichet</strong> - Quand votre ticket est appelé</p>
             </div>
-            <div class="mt-4 p-3 bg-blue-50 rounded-lg">
-                <p class="text-sm text-blue-800">
+            <div class="update-info">
+                <p class="update-label">
                     <strong>Dernière mise à jour:</strong> <span id="lastUpdate">{{ now()->format('H:i:s') }}</span>
                 </p>
             </div>

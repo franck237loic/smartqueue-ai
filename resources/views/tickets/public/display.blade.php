@@ -3,7 +3,6 @@
 @section('title', 'Affichage Public - ' . $company->name)
 
 @section('content')
-<script src="https://cdn.tailwindcss.com"></script>
 <div class="min-h-screen bg-gradient-to-br from-dark-900 to-dark-800 p-4">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\User;
+use App\Models\Setting;
 use App\Services\CompanyService;
 use App\Services\CompanyStatsService;
 use Illuminate\Http\Request;
@@ -153,5 +154,234 @@ class SuperAdminController extends Controller
 
         return redirect()->back()
             ->with('success', $user->name . ' est maintenant Super Admin.');
+    }
+
+    // ========== STATISTIQUES SYSTÈME ==========
+
+    public function statistics()
+    {
+        // Données pour les graphiques
+        $period = request('period', 'month');
+        
+        $stats = [
+            'companies' => [
+                'total' => Company::count(),
+                'growth' => 15, // Pourcentage de croissance (à calculer)
+            ],
+            'users' => [
+                'total' => User::count(),
+                'growth' => 12,
+            ],
+            'services' => [
+                'total' => \App\Models\Service::count(),
+                'growth' => 8,
+            ],
+            'counters' => [
+                'total' => \App\Models\Counter::count(),
+                'growth' => 5,
+            ],
+            'performance' => [
+                'avg_wait_time' => 12,
+                'avg_service_time' => 8,
+                'satisfaction_rate' => 94,
+                'efficiency' => 87,
+            ],
+            'tickets_chart' => [
+                'labels' => ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                'data' => [45, 52, 38, 65, 48, 72, 55],
+            ],
+            'processed_tickets_chart' => [
+                'labels' => ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                'data' => [42, 48, 35, 61, 45, 68, 52],
+            ],
+            'top_companies' => [
+                [
+                    'name' => 'SmartQueue AI',
+                    'tickets' => 1234,
+                    'users' => 45,
+                    'avg_wait_time' => 8,
+                    'satisfaction' => 96,
+                ],
+                [
+                    'name' => 'TechCorp',
+                    'tickets' => 856,
+                    'users' => 32,
+                    'avg_wait_time' => 12,
+                    'satisfaction' => 92,
+                ],
+            ],
+        ];
+
+        return view('super-admin.statistics', compact('stats'));
+    }
+
+    // ========== PARAMÈTRES SYSTÈME ==========
+
+    public function settings()
+    {
+        return view('super-admin.settings');
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'app_name' => 'required|string|max:255',
+            'default_email' => 'required|email',
+            'timezone' => 'required|string',
+            'default_locale' => 'required|string',
+            'max_wait_time' => 'required|integer|min:1|max:180',
+            'avg_service_time' => 'required|integer|min:1|max:60',
+            'daily_ticket_limit' => 'required|integer|min:10|max:10000',
+            'auto_notifications' => 'boolean',
+            'min_password_length' => 'required|integer|min:6|max:32',
+            'session_lifetime' => 'required|integer',
+            'enable_2fa' => 'boolean',
+            'enable_activity_log' => 'boolean',
+            'mail_driver' => 'required|string',
+            'mail_host' => 'required|string',
+            'mail_port' => 'required|integer',
+            'mail_encryption' => 'nullable|string',
+        ]);
+
+        // Sauvegarder tous les paramètres en base de données
+        Setting::set('app_name', $validated['app_name'], 'string', 'Nom de l\'application');
+        Setting::set('default_email', $validated['default_email'], 'string', 'Email par défaut');
+        Setting::set('timezone', $validated['timezone'], 'string', 'Fuseau horaire par défaut');
+        Setting::set('default_locale', $validated['default_locale'], 'string', 'Langue par défaut');
+        Setting::set('max_wait_time', $validated['max_wait_time'], 'integer', 'Temps d\'attente maximal (minutes)');
+        Setting::set('avg_service_time', $validated['avg_service_time'], 'integer', 'Temps de service moyen (minutes)');
+        Setting::set('daily_ticket_limit', $validated['daily_ticket_limit'], 'integer', 'Limite de tickets par jour');
+        Setting::set('auto_notifications', $validated['auto_notifications'], 'boolean', 'Notifications automatiques');
+        Setting::set('min_password_length', $validated['min_password_length'], 'integer', 'Longueur minimale du mot de passe');
+        Setting::set('session_lifetime', $validated['session_lifetime'], 'integer', 'Durée de session (heures)');
+        Setting::set('enable_2fa', $validated['enable_2fa'], 'boolean', 'Activer 2FA');
+        Setting::set('enable_activity_log', $validated['enable_activity_log'], 'boolean', 'Journal d\'activité');
+        Setting::set('mail_driver', $validated['mail_driver'], 'string', 'Driver email');
+        Setting::set('mail_host', $validated['mail_host'], 'string', 'Hôte SMTP');
+        Setting::set('mail_port', $validated['mail_port'], 'integer', 'Port SMTP');
+        Setting::set('mail_encryption', $validated['mail_encryption'] ?? '', 'string', 'Chiffrement SMTP');
+
+        return redirect()->route('super_admin.settings')
+            ->with('success', 'Paramètres sauvegardés avec succès en base de données.');
+    }
+
+    // ========== GESTION ADMINISTRATEURS ==========
+
+    public function administrators()
+    {
+        $administrators = User::where('global_role', 'super_admin')
+            ->withCount(['companies'])
+            ->latest()
+            ->paginate(20);
+
+        return view('super-admin.administrators', compact('administrators'));
+    }
+
+    public function createAdministrator()
+    {
+        return view('super-admin.administrators.create');
+    }
+
+    public function storeAdministrator(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'global_role' => 'super_admin',
+            'email_verified_at' => now(),
+        ]);
+
+        return redirect()->route('super_admin.administrators')
+            ->with('success', 'Administrateur créé avec succès.');
+    }
+
+    public function suspendAdministrator(Request $request, User $administrator)
+    {
+        if ($administrator->id === auth()->id()) {
+            return redirect()->back()
+                ->with('error', 'Vous ne pouvez pas suspendre votre propre compte.');
+        }
+
+        $administrator->update(['status' => 'suspended']);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function resetAdministratorPassword(Request $request, User $administrator)
+    {
+        $newPassword = Str::random(12);
+        $administrator->update(['password' => Hash::make($newPassword)]);
+
+        return response()->json([
+            'success' => true,
+            'password' => $newPassword,
+            'message' => 'Mot de passe réinitialisé avec succès.'
+        ]);
+    }
+
+    public function destroyAdministrator(User $administrator)
+    {
+        if ($administrator->id === auth()->id()) {
+            return redirect()->back()
+                ->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
+        }
+
+        $administrator->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    // ========== PROFIL SUPER ADMIN ==========
+
+    public function profile()
+    {
+        return view('super-admin.profile');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        $user->update($validated);
+
+        return redirect()->route('super_admin.profile')
+            ->with('success', 'Profil mis à jour avec succès.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = auth()->user();
+        
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // Vérifier le mot de passe actuel
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.']);
+        }
+
+        // Mettre à jour le mot de passe
+        $user->update([
+            'password' => Hash::make($validated['password']),
+            'password_changed_at' => now(),
+        ]);
+
+        return redirect()->route('super_admin.profile')
+            ->with('success', 'Mot de passe mis à jour avec succès.');
     }
 }

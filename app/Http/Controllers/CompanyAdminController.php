@@ -184,7 +184,7 @@ class CompanyAdminController extends Controller
             ->withPivot(['counter_id', 'role'])
             ->get();
         
-        return view('company.admin.agents', compact('company', 'agents'));
+        return view('company.admin.agents.index', compact('company', 'agents'));
     }
 
     public function createAgent(Company $company)

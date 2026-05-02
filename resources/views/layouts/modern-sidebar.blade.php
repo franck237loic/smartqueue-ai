@@ -244,14 +244,8 @@
         /* Main Content */
         .main-content {
             flex: 1;
-            margin-left: 280px;
-            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             min-height: 100vh;
             background: #f8fafc;
-        }
-        
-        .sidebar.collapsed + .main-content {
-            margin-left: 80px;
         }
         
         /* Mobile Responsive */
@@ -280,49 +274,7 @@
             cursor: pointer;
         }
         
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -280px;
-                top: 0;
-                height: 100vh;
-                z-index: 50;
-            }
-            
-            .sidebar.open {
-                left: 0;
-            }
-            
-            .sidebar.collapsed {
-                width: 280px;
-                left: -280px;
-            }
-            
-            .sidebar.collapsed.open {
-                left: 0;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .mobile-overlay.show {
-                display: block;
-            }
-            
-            .mobile-toggle {
-                display: flex;
-            }
-            
-            .sidebar.collapsed .nav-text,
-            .sidebar.collapsed .logo-text,
-            .sidebar.collapsed .user-info,
-            .sidebar.collapsed .nav-section-title {
-                opacity: 1;
-                visibility: visible;
-            }
-        }
-        
+                
         /* Animations */
         @keyframes slideIn {
             from {
@@ -355,182 +307,10 @@
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" onclick="toggleMobileSidebar()"></div>
     
-    <div class="flex">
-        <!-- Modern Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <!-- Header -->
-            <div class="sidebar-header">
-                <a href="{{ route('welcome') }}" class="logo">
-                    <div class="logo-icon">
-                        <i data-lucide="layout-dashboard" style="width: 24px; height: 24px; color: white;"></i>
-                    </div>
-                    <span class="logo-text">SmartQueue<span style="color: #60a5fa;">AI</span></span>
-                </a>
-                <button class="toggle-btn" onclick="toggleSidebar()">
-                    <i data-lucide="chevron-left" style="width: 20px; height: 20px;"></i>
-                </button>
-            </div>
             
-            <!-- Navigation -->
-            <nav class="sidebar-nav">
-                @php
-                    $currentCompany = auth()->user()?->currentCompany ?? auth()->user()?->companies()->first();
-                @endphp
-                
-                @if($currentCompany)
-                    <!-- Section Gestion -->
-                    <div class="nav-section">
-                        <div class="nav-section-title">Gestion</div>
-                        
-                        @if(auth()->user()->isSuperAdmin() || auth()->user()->hasRoleInCompany($currentCompany, 'company_admin'))
-                            <a href="{{ route('company.admin.dashboard', $currentCompany) }}" 
-                               class="nav-item {{ request()->routeIs('company.admin.*') ? 'active' : '' }}">
-                                <div class="nav-content">
-                                    <i class="nav-icon" data-lucide="shield-check"></i>
-                                    <span class="nav-text">Dashboard Admin</span>
-                                </div>
-                            </a>
-                        @endif
-                        
-                        @if(auth()->user()->hasRoleInCompany($currentCompany, 'agent'))
-                            <a href="{{ route('company.agent.dashboard', $currentCompany) }}" 
-                               class="nav-item {{ request()->routeIs('company.agent.*') ? 'active' : '' }}">
-                                <div class="nav-content">
-                                    <i class="nav-icon" data-lucide="headphones"></i>
-                                    <span class="nav-text">Guichets Agent</span>
-                                </div>
-                            </a>
-                        @endif
-                    </div>
-                    
-                    <!-- Section Services -->
-                    <div class="nav-section">
-                        <div class="nav-section-title">Services</div>
-                        
-                        <a href="{{ route('company.agent.history', $currentCompany) }}" 
-                           class="nav-item {{ request()->routeIs('company.agent.history') ? 'active' : '' }}">
-                            <div class="nav-content">
-                                <i class="nav-icon" data-lucide="history"></i>
-                                <span class="nav-text">Historique</span>
-                            </div>
-                        </a>
-                        
-                                            </div>
-                @endif
-                
-                <!-- Section Général -->
-                <div class="nav-section">
-                    <div class="nav-section-title">Général</div>
-                    
-                    <a href="{{ route('welcome') }}" 
-                       class="nav-item {{ request()->routeIs('welcome') ? 'active' : '' }}">
-                        <div class="nav-content">
-                            <i class="nav-icon" data-lucide="home"></i>
-                            <span class="nav-text">Page d'accueil</span>
-                        </div>
-                    </a>
-                    
-                                        
-                    @if(auth()->user()->isSuperAdmin() || auth()->user()->hasRoleInCompany($currentCompany, 'company_admin'))
-                        <a href="{{ route('company.admin.settings', $currentCompany ?? auth()->user()?->companies()->first()) }}" 
-                           class="nav-item {{ request()->routeIs('company.admin.settings*') ? 'active' : '' }}">
-                            <div class="nav-content">
-                                <i class="nav-icon" data-lucide="settings"></i>
-                                <span class="nav-text">Paramètres</span>
-                            </div>
-                        </a>
-                    @endif
-                </div>
-            </nav>
-            
-            <!-- Footer -->
-            <div class="sidebar-footer">
-                <!-- User Profile -->
-                <div class="user-profile">
-                    <div class="user-avatar">
-                        {{ substr(auth()->user()->name, 0, 1) }}
-                    </div>
-                    <div class="user-info">
-                        <div class="user-name">{{ auth()->user()->name }}</div>
-                        <div class="user-role">
-                            @if($currentCompany)
-                                {{ ucfirst(auth()->user()->companies()->where('company_id', $currentCompany->id)->first()?->pivot->role ?? 'Agent') }}
-                            @else
-                                Utilisateur
-                            @endif
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Logout Button -->
-                <form method="POST" action="{{ route('logout.post') }}">
-                    @csrf
-                    <button type="submit" class="logout-btn" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
-                        <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
-                        <span>Déconnexion</span>
-                    </button>
-                </form>
-            </div>
-        </aside>
-        
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Top Bar -->
-            <div class="bg-white border-b border-gray-200 sticky top-0 z-30">
-                <div class="px-6 py-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900">@yield('title', 'SmartQueue AI')</h1>
-                            @if($currentCompany)
-                                <p class="text-sm text-gray-500 mt-1">{{ $currentCompany->name }} - Interface Agent</p>
-                            @endif
-                        </div>
-                        
-                        <!-- Company Selector -->
-                        @if(auth()->user()->companies()->count() > 1)
-                            <div class="relative">
-                                <button 
-                                    type="button" 
-                                    class="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition"
-                                    onclick="toggleCompanyDropdown()"
-                                >
-                                    <span class="font-medium">{{ auth()->user()->currentCompany?->name ?? 'Sélectionner une entreprise' }}</span>
-                                    <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
-                                </button>
-                                
-                                <div id="companyDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                                    <div class="py-2 max-h-64 overflow-y-auto">
-                                        @foreach(auth()->user()->companies as $company)
-                                            <form method="POST" action="{{ route('switch.company', $company) }}" class="block">
-                                                @csrf
-                                                <button 
-                                                    type="submit" 
-                                                    class="w-full px-4 py-3 hover:bg-gray-50 transition text-left"
-                                                >
-                                                    <div class="flex items-center justify-between">
-                                                        <div>
-                                                            <div class="font-medium text-gray-900">{{ $company->name }}</div>
-                                                            <div class="text-sm text-gray-500">{{ ucfirst($company->pivot->role) }}</div>
-                                                        </div>
-                                                        @if($company->id == auth()->user()->currentCompany?->id)
-                                                            <i data-lucide="check" style="width: 20px; height: 20px; color: #3b82f6;"></i>
-                                                        @endif
-                                                    </div>
-                                                </button>
-                                            </form>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Page Content -->
-            <div class="p-6">
-                @yield('content')
-            </div>
+            @yield('content')
         </main>
     </div>
     

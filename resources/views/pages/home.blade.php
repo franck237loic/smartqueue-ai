@@ -974,7 +974,7 @@
                 </div>
                 <div class="stat">
                     <div class="stat-number">50M+</div>
-                    <div class="stat-label">Tickets traités</div>
+                    <div class="stat-label">Tickets Traités</div>
                 </div>
                 <div class="stat">
                     <div class="stat-number">99.9%</div>
@@ -988,18 +988,18 @@
     <section class="section section-light">
         <div class="container">
             <div class="cta-card">
-                <h2 class="cta-title">Prêt à Révolutionner Votre Gestion ?</h2>
+                <h2 class="cta-title">Prêt à Transformer Votre Gestion ?</h2>
                 <p class="cta-subtitle">
-                    Rejoignez les centaines d'entreprises qui transforment leur expérience client avec l'intelligence artificielle.
+                    Rejoignez des milliers d'entreprises qui ont déjà optimisé leur service client avec SmartQueue AI
                 </p>
                 <div class="cta-buttons">
                     <a href="{{ route('companies.index') }}" class="btn btn-cta btn-cta-white">
                         <i data-lucide="rocket" style="width: 20px; height: 20px;"></i>
                         Commencer Gratuitement
                     </a>
-<a href="mailto:contact@smartqueue.ai" class="btn btn-cta btn-cta-outline">
-                        <i data-lucide="phone" style="width: 20px; height: 20px;"></i>
-                        Contacter les ventes
+                    <a href="#how-it-works" class="btn btn-cta btn-cta-outline">
+                        <i data-lucide="play-circle" style="width: 20px; height: 20px;"></i>
+                        Voir la Démo
                     </a>
                 </div>
             </div>
@@ -1012,41 +1012,47 @@
             <div class="footer-content">
                 <div class="footer-column">
                     <h3>SmartQueue AI</h3>
-                    <p style="color: #a0aec0; line-height: 1.6;">
-                        La plateforme IA qui réinvente la gestion des files d'attente pour les entreprises modernes.
-                    </p>
-                </div>
-                
-                <div class="footer-column">
-                    <h3>Produit</h3>
                     <ul>
+                        <li><a href="{{ route('welcome') }}">Accueil</a></li>
+                        <li><a href="{{ route('companies.index') }}">Entreprises</a></li>
                         <li><a href="#features">Fonctionnalités</a></li>
                         <li><a href="#how-it-works">Comment ça marche</a></li>
-                        <li><a href="#features">Tarifs</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-column">
-                    <h3>Entreprise</h3>
+                    <h3>Solutions</h3>
                     <ul>
-                        <li><a href="#features">À propos</a></li>
-                        <li><a href="#testimonials">Carrières</a></li>
-                        <li><a href="#features">Blog</a></li>
+                        <li><a href="#">Banques</a></li>
+                        <li><a href="#">Santé</a></li>
+                        <li><a href="#">Administration</a></li>
+                        <li><a href="#">Commerce</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-column">
-                    <h3>Support</h3>
+                    <h3>Ressources</h3>
                     <ul>
-                        <li><a href="#how-it-works">Aide</a></li>
-                        <li><a href="mailto:contact@smartqueue.ai">Contact</a></li>
-                        <li><a href="#features">Statut</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API</a></li>
+                        <li><a href="#">Support</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Légal</h3>
+                    <ul>
+                        <li><a href="#">Mentions légales</a></li>
+                        <li><a href="#">Confidentialité</a></li>
+                        <li><a href="#">CGU</a></li>
+                        <li><a href="#">Cookies</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p> 2024 SmartQueue AI. Tous droits réservés.</p>
+                <p>&copy; 2024 SmartQueue AI. Tous droits réservés.</p>
             </div>
         </div>
     </footer>
@@ -1069,14 +1075,7 @@
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                const href = this.getAttribute('href');
-                
-                // Skip empty or invalid anchors
-                if (!href || href === '#') {
-                    return;
-                }
-                
-                const target = document.querySelector(href);
+                const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
                     target.scrollIntoView({
                         behavior: 'smooth',
